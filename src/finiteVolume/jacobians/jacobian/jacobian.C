@@ -208,13 +208,7 @@ jacobian::jacobian
     const fluidThermo& thermo,
     const volVectorField& U,
     const scalarField& ddtCoeff,
-    const bool& inviscid,
-#if FOUNDATION >= 8
-    const compressible::momentumTransportModel& turbulence,
-    const thermophysicalTransportModel& thermophysicalTransport
-#else
-    const compressible::turbulenceModel& turbulence
-#endif
+    const bool& inviscid
 )
 :
     mesh_(mesh),
@@ -246,12 +240,7 @@ jacobian::jacobian
                 rho,
                 rhoU,
                 rhoE,
-                thermo,
-#if FOUNDATION >= 8
-               turbulence, thermophysicalTransport
-#else
-               turbulence
-#endif
+                thermo
             );
     }
     constructJacobian();

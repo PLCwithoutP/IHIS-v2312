@@ -28,7 +28,6 @@ Description
     Runs hisa solver module.
 
 See also
-    multiRegionSolver
     hisaModule
 
 \*---------------------------------------------------------------------------*/

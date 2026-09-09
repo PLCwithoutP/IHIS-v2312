@@ -48,18 +48,6 @@ Authors
 #include "volFields.H"
 #include "autoPtr.H"
 #include "runTimeSelectionTables.H"
-#if FOUNDATION >= 10
-#include "compressibleMomentumTransportModel.H"
-#elif FOUNDATION == 9
-#include "dynamicMomentumTransportModel.H"
-#elif FOUNDATION == 8
-#include "fluidThermoMomentumTransportModel.H"
-#endif
-#if FOUNDATION >= 8
-#include "fluidThermophysicalTransportModel.H"
-#else
-#include "turbulentFluidThermoModel.H"
-#endif
 #include "fluidThermo.H"
 
 
@@ -132,13 +120,7 @@ public:
             const fluidThermo& thermo,
             const volVectorField& U,
             const scalarField& ddtCoeff,
-            const bool& inviscid,
-#if FOUNDATION >= 8
-            const compressible::momentumTransportModel& turbulence,
-            const thermophysicalTransportModel& thermophysicalTransport
-#else
-            const compressible::turbulenceModel& turbulence
-#endif
+            const bool& inviscid
         );
 
 

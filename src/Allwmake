@@ -3,7 +3,6 @@
 wmake finiteVolume
 wmake preconditioners
 wmake solvers
-cd solidModelling && { ./Allwmake; cd ..; }
 wmake functionObjects
 wmake meshRebalancing
 cd modules && { ./Allwmake; cd ..; }

@@ -1,7 +1,6 @@
 include ../../buildDefs.include
 
 EXE_INC = -g \
-    $(FOAM_VERSION) \
     -I$(LIB_SRC)/finiteVolume/lnInclude \
     $(DYN_MESH_INCLUDE) \
     -I$(LIB_SRC)/dynamicMesh/lnInclude \

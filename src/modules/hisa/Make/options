@@ -1,7 +1,6 @@
 include ../../../buildDefs.include
 
 EXE_INC = -g \
-    $(FOAM_VERSION) \
     -I../solver/lnInclude \
     -I../../finiteVolume/jacobians/jacobianMatrix \
     -I../../solvers/lnInclude \
@@ -10,14 +9,14 @@ EXE_INC = -g \
     -I$(LIB_SRC)/finiteVolume/lnInclude \
     -I$(LIB_SRC)/thermophysicalModels/basic/lnInclude \
     -I$(LIB_SRC)/thermophysicalModels/specie/lnInclude \
-    $(TURB_INC) \
+    $(THERMO_INC) \
     $(DYN_MESH_INCLUDE) \
     -I$(LIB_SRC)/dynamicMesh/lnInclude \
     -I$(LIB_SRC)/meshTools/lnInclude \
     
 LIB_LIBS = \
     -lfiniteVolume \
-    $(TURB_LIBS) \
+    $(THERMO_LIBS) \
     -lspecie \
     $(DYN_MESH_LIB) \
     -ldynamicMesh \

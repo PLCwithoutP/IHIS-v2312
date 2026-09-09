@@ -48,18 +48,6 @@ Authors
 #include "solverModule.H"
 #include "pimpleControl.H"
 #include "fluidThermo.H"
-#if FOUNDATION >= 10
-#include "compressibleMomentumTransportModel.H"
-#elif FOUNDATION == 9
-#include "dynamicMomentumTransportModel.H"
-#elif FOUNDATION == 8
-#include "fluidThermoMomentumTransportModel.H"
-#endif
-#if FOUNDATION >= 8
-#include "fluidThermophysicalTransportModel.H"
-#else
-#include "turbulentFluidThermoModel.H"
-#endif
 #include "zeroGradientFvPatchFields.H"
 #include "fluxScheme.H"
 #include "pseudotimeControl/pseudotimeControl.H"
@@ -67,11 +55,7 @@ Authors
 #include "upwind.H"
 #include "preconditioner.H"
 #include "faceSet.H"
-#if FOUNDATION >= 9
-#include "fvModels.H"
-#else
 #include "fvOptions.H"
-#endif
 #include "uniformDimensionedFields.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -138,17 +122,6 @@ protected:
         //rhoU residual
         PtrList<volVectorField> vectorResiduals_;
 
-#if FOUNDATION >= 8
-        autoPtr<compressible::momentumTransportModel> turbulence_;
-#if FOUNDATION >= 11
-        autoPtr<fluidThermoThermophysicalTransportModel> 
-            thermophysicalTransport_;
-#else
-        autoPtr<fluidThermophysicalTransportModel> thermophysicalTransport_;
-#endif
-#else
-        autoPtr<compressible::turbulenceModel> turbulence_;
-#endif
         autoPtr<fluxScheme> flux_;
 
         bool inviscid_;
@@ -189,12 +162,8 @@ protected:
         bool cellDebugging_;
         label debugCell_;
 
-        //- fvOptions sources
-        #if FOUNDATION >= 9
-        fvModels* fvOptions_;
-        #else
         fv::options* fvOptions_;
-        #endif
+
 
     // Protected member functions
 
@@ -212,10 +181,7 @@ protected:
             const dictionary& parentDict
         );
 
-        #if !(FOUNDATION >= 10)
-        //- Check load-balance and re-distribute mesh if necessary
         void redistributePar();
-        #endif
 
         //- Search for debug point specified in controlDict
         void findDebugCell();

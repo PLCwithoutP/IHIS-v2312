@@ -52,12 +52,6 @@ inline bool Foam::pseudotimeControl::finalIter() const
 }
 
 
-inline bool Foam::pseudotimeControl::turbCorr() const
-{
-    return !turbOnFinalIterOnly_ || finalIter();
-}
-
-
 inline void Foam::pseudotimeControl::setResidual(const residualIO& res)
 {
     residuals_ = res;

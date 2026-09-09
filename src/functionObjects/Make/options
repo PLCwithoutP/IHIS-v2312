@@ -1,7 +1,6 @@
 include ../../buildDefs.include
 
 EXE_INC = -g \
-    $(FOAM_VERSION) \
     $(BLUECFD) \
     -I./lnInclude \
     -I$(LIB_SRC)/finiteVolume/lnInclude \

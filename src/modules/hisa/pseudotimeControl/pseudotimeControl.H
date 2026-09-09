@@ -59,22 +59,13 @@ namespace Foam
 
 class pseudotimeControl
 :
-#if FOUNDATION >= 6
-    public singleRegionSolutionControl
-#else
     public solutionControl
-#endif
 {
 protected:
 
     // Protected data
 
         // Solution controls
-
-#if FOUNDATION >= 6
-            //- Current outer corrector
-            label corr_;
-#endif
 
             //- Steady state flag
             bool steadyState_;
@@ -84,9 +75,6 @@ protected:
 
             //- Minimum number of outer (pseudotime) correctors
             label nCorrOuterMin_;
-
-            //- Flag to indicate whether to only solve turbulence on final iter
-            bool turbOnFinalIterOnly_;
 
             //- Converged flag
             bool converged_;
@@ -110,7 +98,7 @@ protected:
     // Protected Member Functions
 
         //- Read controls from fvSolution dictionary
-#if FOUNDATION >= 6 or OPENFOAM >= 1906
+#if OPENFOAM >= 1906
         virtual bool read();
 #else
         virtual void read();
@@ -164,11 +152,7 @@ public:
         // Solution control
 
             //- pseudotime loop
-#if FOUNDATION >= 6
-            bool loop();
-#else
             virtual bool loop();
-#endif
 
             //- Helper function to identify when to store the intial residuals
             inline bool storeInitialResiduals() const;
@@ -178,9 +162,6 @@ public:
 
             //- Helper function to identify final outer (pseudotime) iteration
             inline bool finalIter() const;
-
-            //- Helper function to identify whether to solve for turbulence
-            inline bool turbCorr() const;
 
             //- Helper function to store residual (initial solver residual)
             inline void setResidual(const residualIO& res);
@@ -195,13 +176,6 @@ public:
             {
                 corr_ = corr;
             }
-
-#if FOUNDATION >= 6
-            label corr() const
-            {
-                return corr_;
-            }
-#endif
 };
 
 

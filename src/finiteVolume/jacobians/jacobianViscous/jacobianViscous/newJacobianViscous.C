@@ -43,13 +43,7 @@ autoPtr<jacobianViscous> jacobianViscous::New
     const volScalarField& rho,
     const volVectorField& rhoU,
     const volScalarField& rhoE,
-    const fluidThermo& thermo,
-#if FOUNDATION >= 8
-    const compressible::momentumTransportModel& turbulence,
-    const thermophysicalTransportModel& thermophysicalTransport
-#else
-    const compressible::turbulenceModel& turbulence
-#endif
+    const fluidThermo& thermo
 )
 {
     word jacobianViscousTypeName;
@@ -77,12 +71,7 @@ autoPtr<jacobianViscous> jacobianViscous::New
            (
                cstrIter()
                (
-                   dict, mesh, rho, rhoU, rhoE, thermo, 
-#if FOUNDATION >= 8
-                   turbulence, thermophysicalTransport
-#else
-                   turbulence
-#endif
+                   dict, mesh, rho, rhoU, rhoE, thermo
                )
            );
 }

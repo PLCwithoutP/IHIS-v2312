@@ -9,11 +9,7 @@ if (cellDebugging_)
     tmp<surfaceVectorField> phiUTauMC;
     if (!inviscid_)
     {
-#if FOUNDATION >= 10
-        volScalarField muEff("muEff", turbulence_->rho()*turbulence_->nuEff());
-#else
-        volScalarField muEff("muEff", turbulence_->muEff());
-#endif
+        volScalarField muLam("muLam", thermo_->mu());
         phiUSnGradMuU = -fvc::interpolate(muEff)*fvc::snGrad(U)*mesh.magSf();
         phiUTauMC = -mesh.Sf() & fvc::interpolate(tauMC_());
     }

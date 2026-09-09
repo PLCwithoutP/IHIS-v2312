@@ -32,9 +32,6 @@ Description
     Loads and calls the appropriate solver module for single region
     cases
 
-See also
-    multiRegionSolver
-
 Authors
     Oliver Oxtoby
     Johan Heyns

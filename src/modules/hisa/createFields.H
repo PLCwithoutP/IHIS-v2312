@@ -168,42 +168,7 @@ phi_.reset
 surfaceScalarField& phi = phi_();
 
 
-Info<< "Creating turbulence model\n" << endl;
-#if FOUNDATION >= 8
-turbulence_ =
-(
-    compressible::momentumTransportModel::New
-    (
-        rho,
-        U,
-        phi,
-        thermo
-    )
-);
-
-Info<< "Creating thermophysical transport model\n" << endl;
-#if FOUNDATION >= 11
-thermophysicalTransport_ =
-    fluidThermoThermophysicalTransportModel::New(turbulence_(), thermo);
-#else
-thermophysicalTransport_ =
-    fluidThermophysicalTransportModel::New(turbulence_(), thermo);
-#endif
-#else
-turbulence_ =
-(
-    compressible::turbulenceModel::New
-    (
-        rho,
-        U,
-        phi,
-        thermo
-    )
-);
-#endif
-Info << endl;
-
-turbulence_->validate();
+Info<< "Laminar analysis selected.\n" << endl;
 
 Info<< "Creating flux scheme\n" << endl;
 flux_ =
@@ -313,19 +278,11 @@ if (!inviscid_)
                 IOobject::NO_READ,
                 IOobject::NO_WRITE
             ),
-#if FOUNDATION >= 10
-            turbulence_->rho()*turbulence_->nuEff()*dev2(Foam::T(fvc::grad(U)))
-#else
-            turbulence_->muEff()*dev2(Foam::T(fvc::grad(U)))
-#endif
+            mu*dev2(Foam::T(fvc::grad(U)))
         )
     );
 }
 
-#if FOUNDATION >= 9
-#include "createFvModels.H"
-fvOptions_ = &fvModels;
-#else
 #include "createFvOptions.H"
 fvOptions_ = &fvOptions;
-#endif
+

@@ -69,16 +69,10 @@ class spectralRadius
         const fluidThermo& thermo_;
         tmp< surfaceScalarField > lambdaVisc_;
         tmp< volScalarField > gamma_;
-#if FOUNDATION >= 8
-        const compressible::momentumTransportModel& turbulence_;
-        const thermophysicalTransportModel& thermophysicalTransport_;
-#else
-        const compressible::turbulenceModel& turbulence_;
-#endif
 
         // Viscous coefficients
-        tmp< surfaceScalarField > muEff_;
-        tmp< surfaceScalarField > alphaEff_;
+        tmp< surfaceScalarField > muLam_;
+        tmp< surfaceScalarField > alphaLam_;
 
 
         //- Private member functions
@@ -98,13 +92,7 @@ class spectralRadius
             const volScalarField& rho,
             const volVectorField& rhoU,
             const volScalarField& rhoE,
-            const fluidThermo& thermo,
-#if FOUNDATION >= 8
-            const compressible::momentumTransportModel& turbulence,
-            const thermophysicalTransportModel& thermophysicalTransport
-#else
-            const compressible::turbulenceModel& turbulence
-#endif
+            const fluidThermo& thermo
         );
 
         virtual void addViscousJacobian(compressibleJacobianMatrix& jacobian);

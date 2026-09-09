@@ -33,9 +33,7 @@ License
 #include "fvcSmooth.H"
 #include "jacobian.H"
 #include "characteristicWallPressureFvPatchScalarField.H"
-#if !(FOUNDATION >= 10)
 #include "dynamicFvMesh.H"
-#endif
 #include "fvcLaplacian.H"
 #include "fvcMeshPhi.H"
 
@@ -84,13 +82,7 @@ void hisaModule::createPreconditioners
                         pThermo_(),
                         U_(),
                         ddtCoeff_(),
-                        inviscid_,
-#if FOUNDATION >= 8
-                        turbulence_,
-                        thermophysicalTransport_
-#else
-                        turbulence_
-#endif
+                        inviscid_
                     )
                 );
                 nj = jacobians.size();
@@ -155,11 +147,8 @@ void hisaModule::initialise()
     #include "createDynamicFvMesh.H"
 
     // Detect steady-state analysis
-    #if FOUNDATION >= 10
-    const dictionary& ddtControls = mesh.schemes().subDict("ddtSchemes");
-    #else
     const dictionary& ddtControls = mesh.schemesDict().subDict("ddtSchemes");
-    #endif
+
     wordList ddtToc (ddtControls.toc());
     steadyState_ = false;
     forAll(ddtToc,s)
@@ -348,13 +337,7 @@ scalar hisaModule::timeStepScaling(const scalar& maxCoNum)
     #include "compressibleCourantNo.H"
 
     scalar scale = maxCoNum/stabilise(CoNum, SMALL);
-    #if FOUNDATION >= 10
-    scale =
-        min
-        (
-            runTime.deltaTValue()*scale, fvOptions_->maxDeltaT()
-        )/runTime.deltaTValue();
-    #endif
+
     return scale;
 }
 
@@ -410,30 +393,21 @@ void hisaModule::outerIteration()
      || (moveMeshOuterCorrectors_ && !(solnControl.corr() % moveMeshOuterCorrectors_))
     )
     {
-        #if FOUNDATION >= 10
-        if (mesh.dynamic())
-        #else
         if (isA<dynamicFvMesh>(mesh))
-        #endif
         {
             // Do any mesh changes
 
             scalar timeBeforeMeshUpdate = runTime.elapsedCpuTime();
 
             // Work around issues with mapping of oriented fields
-            #if !(FOUNDATION >= 10)
             surfaceVectorField Un(phi*mesh.Sf()/sqr(mesh.magSf()));
             #if OPENFOAM >= 1712
             phi.setOriented(false);
             #endif
-            #endif
 
-            #if FOUNDATION >= 10
-            mesh.update();
-            mesh.move();
-            #else
+
             dynamic_cast<dynamicFvMesh&>(mesh).update();
-            #endif
+
 
             if (mesh.changing())
             {
@@ -442,12 +416,10 @@ void hisaModule::outerIteration()
                     << " s" << endl;
             }
 
-            #if !(FOUNDATION >= 10)
             #if OPENFOAM >= 1712
             phi.setOriented(true);
             #endif
             phi = (Un & mesh.Sf());
-            #endif
         }
     }
 
@@ -547,11 +519,9 @@ void hisaModule::outerIteration()
         PtrList<jacobian> jacobians;
         PtrList<preconditioner<2,1>> preconditioners;
 
-        #if FOUNDATION >= 10
-        const dictionary& dict = mesh.solution().subDict("flowSolver");
-        #else
+
         const dictionary& dict = mesh.solutionDict().subDict("flowSolver");
-        #endif
+
         const word solverType(dict.lookup("solver"));
 
         // Create main Jacobian
@@ -567,13 +537,7 @@ void hisaModule::outerIteration()
                 thermo,
                 U,
                 ddtCoeff_(),
-                inviscid_,
-#if FOUNDATION >= 8
-                turbulence_,
-                thermophysicalTransport_
-#else
-                turbulence_
-#endif
+                inviscid_
             )
         );
 
@@ -768,19 +732,6 @@ void hisaModule::outerIteration()
     // Update fields
     #include "updateFields.H"
 
-    // Correct turbulence
-    turbulence_->correct();
-#if FOUNDATION >= 8
-    thermophysicalTransport_->correct();
-    #if FOUNDATION >= 11
-    // Workaround: An old-time field for psi seems to get left behind which
-    // causes mapping issues later
-    const_cast<volScalarField&>(thermo.psi()).clearOldTimes();
-    
-    // Need to do this to update alphat...
-    thermophysicalTransport_->predict();
-    #endif
-#endif
 }
 
 void hisaModule::findDebugCell()

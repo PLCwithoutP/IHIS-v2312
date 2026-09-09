@@ -25,17 +25,10 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-    #if FOUNDATION >= 9
-    fvModels& fvOptions(*fvOptions_);
-    volScalarField rhoSource(fvOptions.source(rho) & rho);
-    volVectorField rhoUSource((fvOptions.source(rho, U) & U) + rhoSource*U);
-    volScalarField rhoESource((fvOptions.source(rho, thermo.he()) & thermo.he()) + (rhoUSource & U) + rhoSource*thermo.he());
-    #else
     fv::options& fvOptions(*fvOptions_);
     volScalarField rhoSource(fvOptions(rho) & rho);
     volVectorField rhoUSource((fvOptions(rho, U) & U) + rhoSource*U);
     volScalarField rhoESource((fvOptions(rho, thermo.he()) & thermo.he()) + (rhoUSource & U) + rhoSource*thermo.he());
-    #endif
 
     // Construct cont eqn: [A] \Delta W = [R]
     rhoR =
@@ -58,29 +51,20 @@ License
     // Viscous flow
     if (!inviscid_)
     {
-#if FOUNDATION >= 10
-        volScalarField muEff("muEff", turbulence_->rho()*turbulence_->nuEff());
-#else
-        volScalarField muEff("muEff", turbulence_->muEff());
-#endif
-#if FOUNDATION >= 11
-        volScalarField alphaEff("alphaEff", thermophysicalTransport_->kappaEff()/thermo.Cv());
-#elif FOUNDATION >= 8
-        volScalarField alphaEff("alphaEff", thermophysicalTransport_->alphaEff());
-#else
-        volScalarField alphaEff("alphaEff", turbulence_->alphaEff());
-#endif
+        // Laminar transport properties (no turbulence model in IHIS)
+        volScalarField muLam("muLam", thermo.mu());
+        volScalarField alphaLam("alphaLam", thermo.alphahe());
 
         volTensorField& tauMC = tauMC_();
-        tauMC = muEff*dev2(Foam::T(fvc::grad(U)));
-        rhoUR += fvc::laplacian(muEff,U);
+        tauMC = muLam*dev2(Foam::T(fvc::grad(U)));
+        rhoUR += fvc::laplacian(muLam,U);
         rhoUR += fvc::div(tauMC);
 
         surfaceScalarField sigmaDotU
         (
             "sigmaDotU",
             (
-              fvc::interpolate(muEff)*fvc::snGrad(U)
+              fvc::interpolate(muLam)*fvc::snGrad(U)
               + (mesh.Sf()/mesh.magSf() & fvc::interpolate(tauMC))
             )
             & Up
@@ -88,7 +72,7 @@ License
         rhoER += fvc::div(sigmaDotU);
 
         volScalarField eCalc("eCalc", rhoE/rho-0.5*magSqr(U)); // prevent e inheriting BC from T in thermo
-        rhoER += fvc::laplacian(alphaEff, eCalc, "laplacian(alphaEff,e)");
+        rhoER += fvc::laplacian(alphaLam, eCalc, "laplacian(alphaLam,e)");
     }
 
     #include "cellDebug.H"

@@ -50,13 +50,7 @@ spectralRadius::spectralRadius
     const volScalarField& rho,
     const volVectorField& rhoU,
     const volScalarField& rhoE,
-    const fluidThermo& thermo,
-#if FOUNDATION >= 8
-    const compressible::momentumTransportModel& turbulence,
-    const thermophysicalTransportModel& thermophysicalTransport
-#else
-    const compressible::turbulenceModel& turbulence
-#endif
+    const fluidThermo& thermo
 )
  :
     jacobianViscous(typeName, dict),
@@ -64,13 +58,7 @@ spectralRadius::spectralRadius
     rho_(rho),
     rhoU_(rhoU),
     rhoE_(rhoE),
-    thermo_(thermo),
-#if FOUNDATION >= 8
-    turbulence_(turbulence),
-    thermophysicalTransport_(thermophysicalTransport)
-#else
-    turbulence_(turbulence)
-#endif
+    thermo_(thermo)
 {}
 
 
@@ -117,32 +105,22 @@ void spectralRadius::boundaryJacobian
 
 void spectralRadius::addViscousJacobian(compressibleJacobianMatrix& jacobian)
 {
-#if FOUNDATION >= 10
-    muEff_ = fvc::interpolate(turbulence_.rho()*turbulence_.nuEff());
-#else
-    muEff_ = fvc::interpolate(turbulence_.muEff());
-#endif
-#if FOUNDATION >= 11
-    alphaEff_ = 
-        fvc::interpolate
-        (
-            thermophysicalTransport_.kappaEff()/thermo_.Cv()
-        );
-#elif FOUNDATION >= 8
-    alphaEff_ = fvc::interpolate(thermophysicalTransport_.alphaEff());
-#else    
-    alphaEff_ = fvc::interpolate(turbulence_.alphaEff());
-#endif
-    const surfaceScalarField& alphaEff = alphaEff_();
-    const surfaceScalarField& muEff = muEff_();
+    muLam_    = fvc::interpolate(thermo_.mu());
+    alphaLam_ = fvc::interpolate(thermo_.alphahe());
+
+    const surfaceScalarField& muLam    = muLam_();
+    const surfaceScalarField& alphaLam = alphaLam_();
+
     gamma_ = thermo_.gamma();
 
     // Viscous wave speed (Luo et al, 2001)
     // CHECK: Blazek proposes an alternative approximation of viscous spectrial
     // radius
-    lambdaVisc_ = (muEff+alphaEff)/fvc::interpolate(rho_);
+    // lambdaVisc_ = (muEff+alphaEff)/fvc::interpolate(rho_);
 //    lambda_() += (muEff)/fvc::interpolate(rho_); // Luo et al. (2000) do not include alphaEff
-
+    // Viscous spectral radius (Luo et al. 2001); Blazek Sec. 6.1.4 gives an
+    // alternative with a max(4/3, gamma/Pr) prefactor
+    lambdaVisc_ = (muLam + alphaLam)/fvc::interpolate(rho_);
     addFluxTerms(jacobian);
 }
 

@@ -52,13 +52,7 @@ laplacian::laplacian
     const volScalarField& rho,
     const volVectorField& rhoU,
     const volScalarField& rhoE,
-    const fluidThermo& thermo,
-#if FOUNDATION >= 8
-    const compressible::momentumTransportModel& turbulence,
-    const thermophysicalTransportModel& thermophysicalTransport
-#else
-    const compressible::turbulenceModel& turbulence
-#endif
+    const fluidThermo& thermo
 )
  :
     jacobianViscous(typeName, dict),
@@ -66,13 +60,7 @@ laplacian::laplacian
     rho_(rho),
     rhoU_(rhoU),
     rhoE_(rhoE),
-    thermo_(thermo),
-#if FOUNDATION >= 8
-    turbulence_(turbulence),
-    thermophysicalTransport_(thermophysicalTransport)
-#else
-    turbulence_(turbulence)
-#endif
+    thermo_(thermo)
 {}
 
 
@@ -122,11 +110,8 @@ void laplacian::boundaryJacobian
     const volScalarField::Boundary& tbf = T.boundaryField();
 
     const scalarField gammaB = thermo_.gamma()->boundaryField()[patchi];
-#if FOUNDATION >= 10
-    const scalarField cvB = thermo_.Cv().boundaryField()[patchi];
-#else
     const scalarField cvB = thermo_.Cv()().boundaryField()[patchi];
-#endif
+
 
     const scalarField& magSfB = mesh_.magSf().boundaryField()[patchi];
 
@@ -223,22 +208,10 @@ void laplacian::boundaryJacobian
 
 void laplacian::addViscousJacobian(compressibleJacobianMatrix& jacobian)
 {
-#if FOUNDATION >= 10
-    muEff_ = fvc::interpolate(turbulence_.rho()*turbulence_.nuEff());
-#else
-    muEff_ = fvc::interpolate(turbulence_.muEff());
-#endif
-#if FOUNDATION >= 11
-    alphaEff_ = 
-        fvc::interpolate
-        (
-            thermophysicalTransport_.kappaEff()/thermo_.Cv()
-        );
-#elif FOUNDATION >= 8
-    alphaEff_ = fvc::interpolate(thermophysicalTransport_.alphaEff());
-#else
-    alphaEff_ = fvc::interpolate(turbulence_.alphaEff());
-#endif
+
+    muLam_    = fvc::interpolate(thermo_.mu());
+    alphaLam_ = fvc::interpolate(thermo_.alphahe());
+
     addFluxTerms(jacobian);
 }
 

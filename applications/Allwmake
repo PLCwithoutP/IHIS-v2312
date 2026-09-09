@@ -1,6 +1,4 @@
 #! /bin/bash
 
-wmake multiRegionSolver
-
 cd singleRegionSolvers && ./Allwmake && cd ..
 

@@ -39,17 +39,14 @@ namespace Foam
 
 // * * * * * * * * * * * * Protected Member Functions  * * * * * * * * * * * //
 
-#if FOUNDATION >= 6 or OPENFOAM >= 1906
+#if OPENFOAM >= 1906
 bool Foam::pseudotimeControl::read()
 #else
 void Foam::pseudotimeControl::read()
 #endif
 {
-#if FOUNDATION >= 6
-    singleRegionSolutionControl::read();
-#else
+
     solutionControl::read(false);
-#endif
 
     // Read solution controls
     const dictionary& pseudoDict = dict();
@@ -63,8 +60,6 @@ void Foam::pseudotimeControl::read()
     {
         pseudoDict.lookup("pseudoTolRel") >> residualTolsRel_;
     }
-    turbOnFinalIterOnly_ =
-        pseudoDict.lookupOrDefault<Switch>("turbOnFinalIterOnly", false);
 
     if (state_.found("initResiduals"))
     {
@@ -80,7 +75,7 @@ void Foam::pseudotimeControl::read()
         firstResiduals_.reset(new residualIO(residualTols_, 0.0));
         state_.lookup("firstResiduals") >> firstResiduals_();
     }
-#if FOUNDATION >= 6 or OPENFOAM >= 1906
+#if OPENFOAM >= 1906
     return true;
 #endif
 }
@@ -126,15 +121,9 @@ bool Foam::pseudotimeControl::criteriaSatisfied()
 
 Foam::pseudotimeControl::pseudotimeControl(fvMesh& mesh, const bool steadyState, const label nScalars, const label nVectors, const residualIO& defaultTol, const residualIO& defaultTolRel)
 :
-#if FOUNDATION >= 6
-    singleRegionSolutionControl(mesh, "pseudoTime"),
-    corr_(0),
-#else
     solutionControl(mesh, "pseudoTime"),
-#endif
     steadyState_(steadyState),
     nCorrOuter_(0),
-    turbOnFinalIterOnly_(false),
     converged_(false),
     firstIteration_(true),
     residualTols_(defaultTol),

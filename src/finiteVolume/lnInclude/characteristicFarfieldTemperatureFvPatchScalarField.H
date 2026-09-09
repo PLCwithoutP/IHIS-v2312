@@ -1,0 +1,1 @@
+../boundaryConditions/characteristic/characteristicFarfield/characteristicFarfieldTemperatureFvPatchScalarField.H
