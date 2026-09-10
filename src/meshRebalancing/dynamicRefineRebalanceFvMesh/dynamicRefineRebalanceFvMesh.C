@@ -23,8 +23,6 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#if !(FOUNDATION >= 10)
-
 #include "dynamicRefineRebalanceFvMesh.H"
 #include "addToRunTimeSelectionTable.H"
 #include "fvMeshDistribute.H"
@@ -117,7 +115,7 @@ void Foam::dynamicRefineRebalanceFvMesh::redistribute
     labelList decomposition(decomposer.decompose(*this, this->cellCentres()));
 
     // Create mesh re-distribution engine
-    #if OPENFOAM >= 2106 or FOUNDATION >= 9
+    #if OPENFOAM >= 2106
     fvMeshDistribute distributor(*this);
     #else
     const scalar tolDim = 1e-6*this->bounds().mag();
@@ -187,19 +185,7 @@ void Foam::dynamicRefineRebalanceFvMesh::redistribute
         #endif
         #endif
         map = distributor.distribute(decomposition);
-        #if defined(FOUNDATION) && FOUNDATION < 10
-        #ifdef LINUX_GNUC
-        if (env("FOAM_SIGFPE"))
-        {
-            feenableexcept
-            (
-                FE_DIVBYZERO
-              | FE_INVALID
-              | FE_OVERFLOW
-            );
-        }
-        #endif
-        #endif
+
     }
 
     #ifdef OPENFOAM
@@ -261,10 +247,6 @@ void Foam::dynamicRefineRebalanceFvMesh::redistribute
         const_cast<volScalarField&>(pwd->y()).checkOut();
         pwd->checkIn();
         pwd->store();
-        // Just call updateMesh with identity map to force a refresh
-        #if defined(OPENFOAM) || FOUNDATION >= 10
-        pwd->updateMesh(mapPolyMesh(*this));
-        #endif
     }
 }
 
@@ -402,6 +384,5 @@ void Foam::dynamicRefineRebalanceFvMesh::mapFields(const mapPolyMesh& mpm)
     }
 }
 
-#endif
 
 // ************************************************************************* //

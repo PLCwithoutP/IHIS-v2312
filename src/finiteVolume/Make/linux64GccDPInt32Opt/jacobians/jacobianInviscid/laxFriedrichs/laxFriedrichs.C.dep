@@ -632,6 +632,7 @@ $(WM_PROJECT_DIR)/src/thermophysicalModels/basic/lnInclude/fluidThermo.H \
 $(WM_PROJECT_DIR)/src/thermophysicalModels/basic/lnInclude/basicThermo.H \
 $(WM_PROJECT_DIR)/src/OpenFOAM/lnInclude/wordIOList.H \
 $(WM_PROJECT_DIR)/src/thermophysicalModels/basic/lnInclude/basicThermoTemplates.C \
+$(WM_PROJECT_DIR)/src/transportModels/compressible/lnInclude/compressibleTransportModel.H \
 $(WM_PROJECT_DIR)/src/OpenFOAM/lnInclude/addToRunTimeSelectionTable.H \
 ./lnInclude/BlockCoupledBoundary.H \
 $(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/fvcMeshPhi.H \

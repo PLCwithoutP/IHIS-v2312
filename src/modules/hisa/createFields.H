@@ -34,12 +34,6 @@ pThermo_ =
 Info << endl;
 fluidThermo& thermo = pThermo_();
 
-#if FOUNDATION >= 11
-// Workaround: An old-time field for psi seems to get left behind which
-// causes mapping issues later
-const_cast<volScalarField&>(thermo.psi()).clearOldTimes();
-#endif
-
 volScalarField& e = thermo.he();
 if (e.name() != "e")
 {
@@ -173,11 +167,7 @@ Info<< "Laminar analysis selected.\n" << endl;
 Info<< "Creating flux scheme\n" << endl;
 flux_ =
 (
-    #if FOUNDATION >= 10
-    fluxScheme::New(mesh.schemes(), thermo, rho, U, rhoU, rhoE)
-    #else
     fluxScheme::New(mesh.schemesDict(), thermo, rho, U, rhoU, rhoE)
-    #endif
 );
 Info << endl;
 

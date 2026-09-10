@@ -70,18 +70,12 @@ boundaryCorrectedFixedValueFvPatchField<Type>::boundaryCorrectedFixedValueFvPatc
 :
     fixedValueFvPatchField<Type>(p, iF)
 {
-#if FOUNDATION >= 9
-#else
     this->patchType() = ptf.patchType();
-#endif
 
     // Enforce mapping of values so we have a valid starting value. This
     // constructor is used when reconstructing fields
-#if FOUNDATION >= 7
-        mapper(*this, ptf);
-#else
-        this->map(ptf, mapper);
-#endif
+    this->map(ptf, mapper);
+
 }
 
 

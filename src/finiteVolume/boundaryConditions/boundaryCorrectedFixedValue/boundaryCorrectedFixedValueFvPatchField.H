@@ -102,8 +102,6 @@ public:
             const fvPatchFieldMapper&
         );
 
-#if FOUNDATION >= 9
-#else
         //- Construct and return a clone
         virtual tmp<fvPatchField<Type> > clone() const
         {
@@ -115,7 +113,6 @@ public:
                 )
             );
         }
-#endif
 
         //- Construct as copy setting internal field reference
         boundaryCorrectedFixedValueFvPatchField

@@ -40,7 +40,7 @@ Description
 #include "hisaModule.H"
 #include "fvcSmooth.H"
 #include "fvcMeshPhi.H"
-
+#include "surfaceInterpolate.H"   // fvc::interpolate
 
 namespace Foam
 {

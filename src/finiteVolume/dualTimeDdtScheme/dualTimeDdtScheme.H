@@ -207,36 +207,10 @@ public:
             const fluxFieldType& phi
         ) override;
 
-#if FOUNDATION >= 11
-        virtual tmp<fluxFieldType> fvcDdtUfCorr
-        (
-            const volScalarField& alpha,
-            const volScalarField& rho,
-            const VolField<Type>& U,
-            const SurfaceField<Type>& Uf
-        ) override;
-
-        virtual tmp<fluxFieldType> fvcDdtPhiCorr
-        (
-            const volScalarField& alpha,
-            const volScalarField& rho,
-            const VolField<Type>& U,
-            const fluxFieldType& phi
-        ) override;
-#endif
-
         virtual tmp<surfaceScalarField> meshPhi
         (
             const GeometricField<Type, fvPatchField, volMesh>&
         ) override;
-
-#if FOUNDATION >= 10
-        virtual tmp<scalarField> meshPhi
-        (
-            const GeometricField<Type, fvPatchField, volMesh>&,
-            const label patchi
-        ) override;
-#endif
 };
 
 

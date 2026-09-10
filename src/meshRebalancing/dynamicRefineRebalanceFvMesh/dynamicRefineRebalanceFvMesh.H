@@ -51,8 +51,6 @@ Description
 #ifndef dynamicRefineRebalanceFvMesh_H
 #define dynamicRefineRebalanceFvMesh_H
 
-#if !(FOUNDATION >= 10)
-
 #include "dynamicRefineFvMesh.H"
 #include "decompositionMethod.H"
 #include "processorFvPatchField.H"
@@ -163,6 +161,5 @@ void dynamicRefineRebalanceFvMesh::parallelSyncFields(const wordList& fields)
 
 #endif
 
-#endif
 
 // ************************************************************************* //

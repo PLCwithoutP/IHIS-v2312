@@ -29,6 +29,7 @@ License
 #include "transformFvPatchFields.H"
 #include "fvjOperators.H"
 #include "addToRunTimeSelectionTable.H"
+#include "surfaceInterpolate.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

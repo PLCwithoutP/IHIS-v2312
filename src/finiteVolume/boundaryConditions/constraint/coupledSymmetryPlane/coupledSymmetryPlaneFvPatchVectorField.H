@@ -107,8 +107,6 @@ public:
             const DimensionedField<vector, volMesh>&
         );
 
-#if FOUNDATION >= 9
-#else
         //- Construct and return a clone
         virtual tmp<fvPatchField<vector>> clone() const
         {
@@ -121,7 +119,6 @@ public:
                 )
             );
         }
-#endif
 
         //- Construct and return a clone setting internal field reference
         virtual tmp<fvPatchField<vector>> clone

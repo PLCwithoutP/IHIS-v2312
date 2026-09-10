@@ -67,11 +67,7 @@ Foam::autoPtr<Foam::solverModule> Foam::solverModule::New
         Info<< "Selecting solver " << solverType << endl;
     }
 
-#if FOUNDATION >= 8
-    libs.open
-#else
     const_cast<Time&>(t).libs().open
-#endif
     (
         solverDict,
         "libs",

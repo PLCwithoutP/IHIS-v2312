@@ -36,6 +36,10 @@ License
 #include "dynamicFvMesh.H"
 #include "fvcLaplacian.H"
 #include "fvcMeshPhi.H"
+#include "surfaceInterpolate.H"   // fvc::interpolate
+#include "fvcDiv.H"               // fvc::div
+#include "fvcSnGrad.H"            // fvc::snGrad
+#include "fvmDdt.H"               // fvm::ddt
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 

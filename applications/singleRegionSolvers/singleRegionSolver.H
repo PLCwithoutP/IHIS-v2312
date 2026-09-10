@@ -76,17 +76,7 @@ int main(int argc, char *argv[])
         if (args.optionFound("list"))
         #endif
         {
-            #if FOUNDATION >= 11
-            Info<< nl
-                << "Available configured functionObjects:"
-                << listAllConfigFiles
-                   (
-                       functionEntries::includeFuncEntry::functionObjectDictPath
-                   )
-                << endl;
-            #else            
             functionObjectList::list();
-            #endif
             return 0;
         }
 
@@ -130,10 +120,8 @@ int main(int argc, char *argv[])
                 (
                     args,
                     runTime,
-                    functionsDict
-                    #if !(FOUNDATION >= 10)
-                    , selectedFields
-                    #endif
+                    functionsDict, 
+                    selectedFields
                 );
                 functionsPtr->execute();
 
@@ -233,26 +221,8 @@ int main(int argc, char *argv[])
 
         // --- Outer corrector loop
         bool notFinished;
-#if FOUNDATION >= 6
-        while (true)
-        {
-            // loop() function was removed from the base class
-            if (isA<pimpleControl>(solver.solnControl()))
-            {
-                notFinished = refCast<pimpleControl>(solver.solnControl()).loop();
-            }
-            else
-            {
-                notFinished = refCast<pseudotimeControl>(solver.solnControl()).loop();
-            }
-            if (!notFinished)
-            {
-                break;
-            }
-#else
         while ( (notFinished = solver.solnControl().loop()) )
         {
-#endif
             solver.outerIteration();
             if (steadyState)
             {

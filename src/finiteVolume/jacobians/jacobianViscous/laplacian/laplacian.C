@@ -31,6 +31,7 @@ License
 #include "fvjOperators.H"
 #include "addToRunTimeSelectionTable.H"
 #include "BlockCoupledBoundary.H"
+#include "surfaceInterpolate.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -78,12 +79,12 @@ void laplacian::addFluxTerms(compressibleJacobianMatrix& jacobian)
 
     // Add Jacobian for the Laplacian part of the viscous terms
 
-    dMomByRho -= fvj::laplacian(muEff_(), -rhoU_/sqr(rho_));
-    dMomByRhoU -= fvj::laplacian(muEff_(), 1.0/rho_)*tensor::I;
+    dMomByRho -= fvj::laplacian(muLam_(), -rhoU_/sqr(rho_));
+    dMomByRhoU -= fvj::laplacian(muLam_(), 1.0/rho_)*tensor::I;
 
-    dEnergyByRho -= fvj::laplacian(alphaEff_(), -rhoE_/sqr(rho_)+magSqr(rhoU_/rho_)/rho_);
-    dEnergyByRhoU -= fvj::laplacian(alphaEff_(), -rhoU_/sqr(rho_));
-    dEnergyByRhoE -= fvj::laplacian(alphaEff_(), 1.0/rho_);
+    dEnergyByRho -= fvj::laplacian(alphaLam_(), -rhoE_/sqr(rho_)+magSqr(rhoU_/rho_)/rho_);
+    dEnergyByRhoU -= fvj::laplacian(alphaLam_(), -rhoU_/sqr(rho_));
+    dEnergyByRhoE -= fvj::laplacian(alphaLam_(), 1.0/rho_);
 }
 
 void laplacian::boundaryJacobian
@@ -116,12 +117,12 @@ void laplacian::boundaryJacobian
     const scalarField& magSfB = mesh_.magSf().boundaryField()[patchi];
 
     tensorField dMomFluxdU(mesh_.boundary()[patchi].patch().size(), Zero);
-    scalarField dMomFluxdUDiag(-muEff_().boundaryField()[patchi]*magSfB);
+    scalarField dMomFluxdUDiag(-muLam_().boundaryField()[patchi]*magSfB);
     dMomFluxdU.replace(tensor::XX, dMomFluxdUDiag);
     dMomFluxdU.replace(tensor::YY, dMomFluxdUDiag);
     dMomFluxdU.replace(tensor::ZZ, dMomFluxdUDiag);
 
-    scalarField dEnergyFluxdT(-alphaEff_().boundaryField()[patchi]*cvB*magSfB);
+    scalarField dEnergyFluxdT(-alphaLam_().boundaryField()[patchi]*cvB*magSfB);
 
     scalarField dContFluxdIntp(mesh_.boundary()[patchi].size(), Zero);
     vectorField dContFluxdIntU(mesh_.boundary()[patchi].size(), Zero);

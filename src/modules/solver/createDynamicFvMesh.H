@@ -67,11 +67,7 @@ else
     Info << "Creating dynamic mesh" << nl << endl;
     mesh_.reset
     (
-        #if FOUNDATION >= 10
-        new fvMesh
-        #else
         dynamicFvMesh::New
-        #endif
         (
             IOobject
             (
@@ -80,11 +76,7 @@ else
                 runTime,
                 IOobject::MUST_READ
             )
-        #if FOUNDATION >= 10
-        )
-        #else
         ).ptr()
-        #endif
     );
 }
 

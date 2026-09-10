@@ -9,8 +9,8 @@ if (cellDebugging_)
     tmp<surfaceVectorField> phiUTauMC;
     if (!inviscid_)
     {
-        volScalarField muLam("muLam", thermo_->mu());
-        phiUSnGradMuU = -fvc::interpolate(muEff)*fvc::snGrad(U)*mesh.magSf();
+        volScalarField muLam("muLam", thermo.mu());
+        phiUSnGradMuU = -fvc::interpolate(muLam)*fvc::snGrad(U)*mesh.magSf();
         phiUTauMC = -mesh.Sf() & fvc::interpolate(tauMC_());
     }
 

@@ -26,11 +26,7 @@ License
 \*---------------------------------------------------------------------------*/
 
     // Optional failsafe to avoid -ve rho. Avoid dividing by very small quantity
-    #if FOUNDATION >= 10
-    const dictionary& dict = mesh.solution().subDict("pseudoTime");
-    #else
     const dictionary& dict = mesh.solutionDict().subDict("pseudoTime");
-    #endif
     dimensionedScalar rhoMin
     (
         "rhoMin",

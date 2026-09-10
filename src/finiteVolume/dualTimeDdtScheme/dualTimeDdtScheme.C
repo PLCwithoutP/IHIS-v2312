@@ -235,37 +235,6 @@ dualTimeDdtScheme<Type>::fvcDdtPhiCorr
     return scheme_->fvcDdtPhiCorr(rho,U,phi);
 }
 
-
-#if FOUNDATION >= 11
-template<class Type>
-tmp<typename dualTimeDdtScheme<Type>::fluxFieldType>
-dualTimeDdtScheme<Type>::fvcDdtUfCorr
-(
-    const volScalarField& alpha,
-    const volScalarField& rho,
-    const VolField<Type>& U,
-    const SurfaceField<Type>& Uf
-)
-{
-    return scheme_->fvcDdtUfCorr(alpha,rho,U,Uf);
-}
-
-
-template<class Type>
-tmp<typename dualTimeDdtScheme<Type>::fluxFieldType>
-dualTimeDdtScheme<Type>::fvcDdtPhiCorr
-(
-    const volScalarField& alpha,
-    const volScalarField& rho,
-    const VolField<Type>& U,
-    const fluxFieldType& phi
-)
-{
-    return scheme_->fvcDdtPhiCorr(alpha,rho,U,phi);
-}
-#endif
-
-
 template<class Type>
 tmp<surfaceScalarField> dualTimeDdtScheme<Type>::meshPhi
 (
@@ -274,20 +243,6 @@ tmp<surfaceScalarField> dualTimeDdtScheme<Type>::meshPhi
 {
     return scheme_->meshPhi(vf);
 }
-
-#if FOUNDATION >= 10
-template<class Type>
-tmp<scalarField> dualTimeDdtScheme<Type>::meshPhi
-(
-    const GeometricField<Type, fvPatchField, volMesh>& vf,
-    const label patchi
-)
-{
-    return scheme_->meshPhi(vf, patchi);
-}
-#endif
-
-
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

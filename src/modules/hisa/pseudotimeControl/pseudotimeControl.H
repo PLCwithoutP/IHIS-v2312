@@ -40,12 +40,7 @@ Authors
 #ifndef pseudotimeControl_H
 #define pseudotimeControl_H
 
-#if FOUNDATION >= 6
-#include "convergenceControl.H"
-#include "singleRegionSolutionControl.H"
-#else
 #include "solutionControl.H"
-#endif
 #include "residualIO.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
