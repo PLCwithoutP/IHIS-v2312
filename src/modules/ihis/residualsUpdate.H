@@ -28,7 +28,7 @@ License
     fv::options& fvOptions(*fvOptions_);
     volScalarField rhoSource(fvOptions(rho) & rho);
     volVectorField rhoUSource((fvOptions(rho, U) & U) + rhoSource*U);
-    volScalarField rhoESource((fvOptions(rho, neThermo.he()) & neThermo.he()) + (rhoUSource & U) + rhoSource*neThermo.he());
+    volScalarField rhoESource((fvOptions(rho, neThermo.eTR()) & neThermo.eTR()) + (rhoUSource & U) + rhoSource*neThermo.eTR());
 
     // Construct cont eqn: [A] \Delta W = [R]
     rhoR =
@@ -53,7 +53,7 @@ License
     {
         // Laminar transport properties (no turbulence model in IHIS)
         volScalarField muLam("muLam", neThermo.mu());
-        volScalarField alphaLam("alphaLam", neThermo.alphahe());
+        volScalarField alphaLam("alphaLam", neThermo.kappaTR()/neThermo.CvTR());
 
         volTensorField& tauMC = tauMC_();
         tauMC = muLam*dev2(Foam::T(fvc::grad(U)));

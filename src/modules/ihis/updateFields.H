@@ -63,7 +63,7 @@ License
         mesh,
         TMin
     );
-    volScalarField eBound(neThermo.he(neThermo.p(), TBound));
+    volScalarField eBound(neThermo.eTR(neThermo.p(), TBound));
 
     if (max(neg(e-eBound)).value() > 0.5)
     {
@@ -79,7 +79,7 @@ License
     if (TMax.value() < GREAT)
     {
         TBound == TMax;
-        eBound == neThermo.he(neThermo.p(), TBound);
+        eBound == neThermo.eTR(neThermo.p(), TBound);
         if (max(pos(e-eBound)).value() > 0.5)
         {
             e = min(e, eBound);
@@ -148,7 +148,7 @@ License
         T.boundaryFieldRef() == min(T.boundaryField(), TMax.value());
     }
 
-    e.boundaryFieldRef() == neThermo.he(p, T)->boundaryField();
+    e.boundaryFieldRef() == neThermo.eTR(p, T)->boundaryField();
 
     neThermo.correct();                       // NOTE: Correct psi boundaryField
 

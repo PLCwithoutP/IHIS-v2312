@@ -100,9 +100,10 @@ protected:
         autoPtr<surfaceScalarField> phiEp_;
         autoPtr<surfaceVectorField> Up_;
 
-        // The value of neThermo.he() at T = 0 and p = 0, used as offset to get
+        // The value of neThermo.eTR() at T = 0 and p = 0, used as offset to get
         // absolute internal energy
         autoPtr<volScalarField> eZero_;
+        autoPtr<volScalarField> eVibMix_;
 
         autoPtr<volScalarField> rPseudoDeltaT_;
         // 1/dt (for Euler), or equivalent for other schemes

@@ -34,13 +34,8 @@ pThermo_ =
 Info << endl;
 ne2TReactionThermo& neThermo = pThermo_();
 
-volScalarField& e = neThermo.he();
-if (e.name() != "e")
-{
-    FatalErrorInFunction
-        << "Only energy type internalEnergy supported."
-        << nl << exit(FatalError);
-}
+volScalarField& e = neThermo.eTR();
+
 const volScalarField& mu = neThermo.mu();
 
 if (gMax(mu.internalField()) > 0.0)
@@ -116,7 +111,7 @@ volScalarField TZero
 (
     IOobject("TZero", runTime.timeName(), mesh),
     mesh,
-    dimensionedScalar("0", neThermo.T().dimensions(), SMALL)
+    dimensionedScalar("0", neThermo.TTR().dimensions(), SMALL)
 );
 volScalarField pZero
 (
@@ -124,7 +119,49 @@ volScalarField pZero
     mesh,
     dimensionedScalar("0", neThermo.p().dimensions(), SMALL)
 );
-eZero_.reset(new volScalarField("eZero", neThermo.he(pZero, TZero)));
+eZero_.reset(new volScalarField("eZero", neThermo.eTR(pZero, TZero) - neThermo.hc()));
+// T6.12: eZero must be finite everywhere (raw NASA-9 at T = SMALL gives -inf)
+{
+    bool finite = true;
+
+    for (const scalar v : eZero_().primitiveField())
+    {
+        if (!std::isfinite(v)) { finite = false; break; }
+    }
+    forAll(eZero_().boundaryField(), patchi)
+    {
+        for (const scalar v : eZero_().boundaryField()[patchi])
+        {
+            if (!std::isfinite(v)) { finite = false; break; }
+        }
+    }
+
+    if (!returnReduce(finite, andOp<bool>()))
+    {
+        FatalErrorInFunction
+            << "eZero is not finite. With twoTemperature false, the species"
+            << " Cp coefficients must stay finite at T = SMALL"
+            << " (raw NASA-9 a0/T^2 and a1*ln(T) terms diverge)."
+            << exit(FatalError);
+    }
+}
+
+eVibMix_.reset
+(
+    new volScalarField
+    (
+        IOobject
+        (
+            "eVibMix",
+            runTime.timeName(),
+            mesh,
+            IOobject::NO_READ,
+            IOobject::NO_WRITE
+        ),
+        mesh,
+        dimensionedScalar("zero", e.dimensions(), 0.0)
+    )
+);
 
 scalarVars_.set
 (

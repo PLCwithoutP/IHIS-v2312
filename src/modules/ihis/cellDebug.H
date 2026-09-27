@@ -25,7 +25,7 @@ if (cellDebugging_)
             << "p:" << tab << neThermo.p()[debugCell_] << nl
             << "0.5*rho|U|^2:" << tab << 0.5*rhoMagUSqr << nl
             << "rhoe:" << tab << rhoE[debugCell_]-0.5*rhoMagUSqr << nl
-            << "T:" << tab << neThermo.T()[debugCell_] << nl
+            << "T:" << tab << neThermo.TTR()[debugCell_] << nl
             << "Volume:" << tab << mesh.V()[debugCell_] << nl
             << "deltaT:" << tab << 1.0/(rPseudoDeltaT[debugCell_]+SMALL) << endl;
         if (localTimestepping_)
@@ -82,7 +82,7 @@ if (cellDebugging_)
                     << "\tp:" << tab << neThermo.p()[otherCellI] << nl
                     << "\t0.5*rho|U|^2:" << tab << 0.5*rhoMagUSqr << nl
                     << "\trhoe:" << tab << rhoE[otherCellI]-0.5*rhoMagUSqr << nl
-                    << "\tT:" << tab << neThermo.T()[otherCellI] << nl
+                    << "\tT:" << tab << neThermo.TTR()[otherCellI] << nl
                     << "\tVolume:" << tab << mesh.V()[otherCellI] << nl
                     << "\tdeltaT:" << tab << 1.0/(rPseudoDeltaT[otherCellI]+SMALL) << endl;
                 if (localTimestepping_)
