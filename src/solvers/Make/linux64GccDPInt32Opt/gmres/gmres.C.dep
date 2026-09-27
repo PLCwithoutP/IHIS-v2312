@@ -630,8 +630,8 @@ $(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/calculatedFvsPatchFields.H \
 ./residualIO/residualIO.H \
 ../preconditioners/lnInclude/preconditioner.H \
 ../preconditioners/lnInclude/preconditionerNew.C \
-lnInclude/hisaSolver.H \
-lnInclude/hisaSolverNew.C \
+lnInclude/ihisSolver.H \
+lnInclude/ihisSolverNew.C \
 gmres/gmresTemplates.C \
 $(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/zeroGradientFvPatchFields.H \
 

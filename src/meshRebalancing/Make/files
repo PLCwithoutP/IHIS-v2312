@@ -1,5 +1,4 @@
 dynamicRefineRebalanceFvMesh/dynamicRefineRebalanceFvMesh.C
-rebalancableRefiner/fvMeshTopoChangersRebalancableRefiner.C
 
-LIB = $(FOAM_USER_LIBBIN)/libhisaMeshRebalancing
+LIB = $(FOAM_USER_LIBBIN)/libihisMeshRebalancing
 

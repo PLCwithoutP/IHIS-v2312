@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------*\
 
-    HiSA: High Speed Aerodynamic solver
+    IHIS: In-house Hypersonics Implicit solver
 
     Copyright (C) 2014-2018 Oliver Oxtoby - CSIR, South Africa
     Copyright (C) 2014-2018 Johan Heyns - CSIR, South Africa
@@ -8,20 +8,20 @@
 
 -------------------------------------------------------------------------------
 License
-    This file is part of HiSA.
+    This file is part of IHIS.
 
-    HiSA is free software: you can redistribute it and/or modify it
+    IHIS is free software: you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
-    HiSA is distributed in the hope that it will be useful, but WITHOUT
+    IHIS is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with HiSA.  If not, see <http://www.gnu.org/licenses/>.
+    along with IHIS.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -41,11 +41,11 @@ namespace Foam
 {
 
     // This creates vector and tensor versions with scalar weights (using magSqr).
-    // In HiSA we only use the scalar version as we do vectors componentwise.
+    // In IHIS we only use the scalar version as we do vectors componentwise.
     makeLimitedSurfaceInterpolationScheme(wVanLeer, wVanLeerLimiter)
 
     // This creates a scalar weighting for a vector using direction of
-    // maximum gradient. Not used in HiSA as above.
+    // maximum gradient. Not used in IHIS as above.
     makeLimitedVSurfaceInterpolationScheme(wVanLeerV, wVanLeerLimiter)
 
     // Clamped versions - variables clipped before input into limiter

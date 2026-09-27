@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------*\
 
-    HiSA: High Speed Aerodynamic solver
+    IHIS: In-house Hypersonics Implicit solver
 
     Copyright (C) 2014-2018 Johan Heyns - CSIR, South Africa
     Copyright (C) 2014-2018 Oliver Oxtoby - CSIR, South Africa
@@ -8,20 +8,20 @@
 
 -------------------------------------------------------------------------------
 License
-    This file is part of HiSA.
+    This file is part of IHIS.
 
-    HiSA is free software: you can redistribute it and/or modify it
+    IHIS is free software: you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
-    HiSA is distributed in the hope that it will be useful, but WITHOUT
+    IHIS is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with HiSA.  If not, see <http://www.gnu.org/licenses/>.
+    along with IHIS.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -65,13 +65,8 @@ characteristicFarfieldVelocityFvPatchVectorField
     mixedFvPatchVectorField(ptf, p, iF, mapper),
     characteristicBase(ptf, p, mapper),
     BlockCoupledBoundary(dynamic_cast<fvPatchField<vector>&>(*this)),
-#if FOUNDATION >= 7
-    UCoeff_(mapper(ptf.UCoeff_)),
-    pCoeff_(mapper(ptf.pCoeff_))
-#else
     UCoeff_(ptf.UCoeff_, mapper),
     pCoeff_(ptf.pCoeff_, mapper)
-#endif
 {}
 
 
@@ -136,37 +131,14 @@ characteristicFarfieldVelocityFvPatchVectorField
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-#if FOUNDATION >= 11
-void Foam::characteristicFarfieldVelocityFvPatchVectorField::map
-(
-    const fvPatchVectorField& ptf,
-    const fvPatchFieldMapper& mapper
-)
-{
-    mixedFvPatchField<vector>::map(ptf, mapper);
-
-    const characteristicFarfieldVelocityFvPatchVectorField& mptf =
-        refCast<const characteristicFarfieldVelocityFvPatchVectorField>(ptf);
-
-    mapper(UCoeff_, mptf.UCoeff_);
-    mapper(pCoeff_, mptf.pCoeff_);
-}
-
-
-#else
 void Foam::characteristicFarfieldVelocityFvPatchVectorField::autoMap
 (
     const fvPatchFieldMapper& m
 )
 {
     mixedFvPatchField<vector>::autoMap(m);
-#if FOUNDATION >= 7
-    m(UCoeff_, UCoeff_);
-    m(pCoeff_, pCoeff_);
-#else
     UCoeff_.autoMap(m);
     pCoeff_.autoMap(m);
-#endif
 }
 
 
@@ -184,7 +156,6 @@ void Foam::characteristicFarfieldVelocityFvPatchVectorField::rmap
     UCoeff_.rmap(mptf.UCoeff_, addr);
     pCoeff_.rmap(mptf.pCoeff_, addr);
 }
-#endif
 
 
 void Foam::characteristicFarfieldVelocityFvPatchVectorField::updateCoeffs()
@@ -196,11 +167,7 @@ void Foam::characteristicFarfieldVelocityFvPatchVectorField::updateCoeffs()
 
     const fvMesh& mesh = patch().boundaryMesh().mesh();
     const fluidThermo& thermo =
-        #if FOUNDATION >= 10
-        mesh.lookupObject<fluidThermo>(physicalProperties::typeName);
-        #else
         mesh.lookupObject<fluidThermo>(basicThermo::dictName);
-        #endif
 
     tmp< volScalarField > gamma = thermo.gamma();
     const fvPatchField<scalar>& pgamma =
@@ -362,13 +329,8 @@ void Foam::characteristicFarfieldVelocityFvPatchVectorField::write(Ostream& os) 
 {
     mixedFvPatchVectorField::write(os);
     characteristicBase::write(os);
-#if FOUNDATION >= 7
-    writeEntry(os, "UCoeff", UCoeff_);
-    writeEntry(os, "pCoeff", pCoeff_);
-#else
     UCoeff_.writeEntry("UCoeff", os);
     pCoeff_.writeEntry("pCoeff", os);
-#endif
 }
 
 

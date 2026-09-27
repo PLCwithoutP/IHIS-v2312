@@ -1,6 +1,0 @@
-SOURCE = \
-pseudotimeControl/pseudotimeControl.C \
-hisaModule.C \
-hisaModuleTimestepping.C \
-
-# sources

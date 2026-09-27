@@ -1,0 +1,24 @@
+{
+  "configurations": [
+    {
+      "name": "OpenFOAM-v2512",
+      "includePath": [
+        "${workspaceFolder}/**",
+        "/home/administrator/OF2512/OpenFOAM-v2512/src/**",
+        "/home/administrator/Desktop/codeProjects/masterThesisCode/**",
+        "/home/furkant/OpenFOAM/OpenFOAM-v2512/src/**",
+        "/home/furkant/OpenFOAM/OpenFOAM-v2512/**"
+      ],
+      "defines": [
+        "WM_DP",                      
+        "FOAM_EXTEND",                
+        "__linux__"
+      ],
+      "compilerPath": "/usr/bin/g++",
+      "cStandard": "c11",
+      "cppStandard": "c++11",
+      "intelliSenseMode": "linux-gcc-x64"
+    }
+  ],
+  "version": 4
+}

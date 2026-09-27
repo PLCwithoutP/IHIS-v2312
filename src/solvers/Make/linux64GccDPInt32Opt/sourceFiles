@@ -1,5 +1,5 @@
 SOURCE = \
-hisaSolver/hisaSolver.C \
+ihisSolver/ihisSolver.C \
 gmres/gmres.C \
 
 # sources

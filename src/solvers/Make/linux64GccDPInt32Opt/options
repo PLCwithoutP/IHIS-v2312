@@ -45,7 +45,7 @@ EXE_INC = -g -I./residualIO -I../finiteVolume/lnInclude -I../preconditioners/lnI
 
 
 
-LIB_LIBS = -lOpenFOAM -lfiniteVolume -lmeshTools -L$(FOAM_USER_LIBBIN) -lhisaFiniteVolume -lhisaPreconditioners
+LIB_LIBS = -lOpenFOAM -lfiniteVolume -lmeshTools -L$(FOAM_USER_LIBBIN) -lihisFiniteVolume -lihisPreconditioners
 
 
 

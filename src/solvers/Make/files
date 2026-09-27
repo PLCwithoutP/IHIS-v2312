@@ -1,5 +1,5 @@
-hisaSolver/hisaSolver.C
+ihisSolver/ihisSolver.C
 
 gmres/gmres.C
 
-LIB = $(FOAM_USER_LIBBIN)/libhisaSolvers
+LIB = $(FOAM_USER_LIBBIN)/libihisSolvers

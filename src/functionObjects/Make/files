@@ -2,4 +2,4 @@ shockRefinement/shockRefinement.C
 writeFields/writeFields.C
 writeCellNumbering/writeCellNumbering.C
 
-LIB = $(FOAM_USER_LIBBIN)/libhisaFunctionObjects
+LIB = $(FOAM_USER_LIBBIN)/libihisFunctionObjects

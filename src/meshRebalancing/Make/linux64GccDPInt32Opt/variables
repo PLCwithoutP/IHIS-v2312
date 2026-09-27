@@ -1,1 +1,1 @@
-LIB = $(FOAM_USER_LIBBIN)/libhisaMeshRebalancing
+LIB = $(FOAM_USER_LIBBIN)/libihisMeshRebalancing

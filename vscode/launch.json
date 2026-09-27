@@ -1,0 +1,26 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "OF-Debug",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "/home/t12022124597/OpenFOAM/t12022124597-v2412/platforms/linux64GccDPInt32Opt/bin/nexaFoam",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "/home/t12022124597/Desktop/codeProjects/masterThesisCode/nexaFoam/applications/solvers/nexaFoam",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            //"preLaunchTask": "wmake-build",
+            "miDebuggerPath": "/usr/bin/gdb"
+        }
+    ]
+}

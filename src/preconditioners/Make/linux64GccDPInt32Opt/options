@@ -48,7 +48,7 @@ EXE_INC = -g $(BLUECFD) -I../finiteVolume/lnInclude -I../finiteVolume/jacobians/
 
 
 
-LIB_LIBS = -lfiniteVolume -lmeshTools -L$(FOAM_USER_LIBBIN) -lhisaFiniteVolume
+LIB_LIBS = -lfiniteVolume -lmeshTools -L$(FOAM_USER_LIBBIN) -lihisFiniteVolume
 
 
 

@@ -1,4 +1,4 @@
 #! /bin/bash
 
 wmake solver
-wmake hisa
+wmake ihis

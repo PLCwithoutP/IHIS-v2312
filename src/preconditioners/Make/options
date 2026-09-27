@@ -12,5 +12,5 @@ LIB_LIBS = \
     -lfiniteVolume \
     -lmeshTools \
     -L$(FOAM_USER_LIBBIN) \
-    -lhisaFiniteVolume
+    -lihisFiniteVolume
 

@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------*\
 
-    HiSA: High Speed Aerodynamic solver
+    IHIS: In-house Hypersonics Implicit solver
 
     Copyright (C) 2014-2018 Oliver Oxtoby - CSIR, South Africa
     Copyright (C) 2014-2018 Johan Heyns - CSIR, South Africa
@@ -9,20 +9,20 @@
 
 -------------------------------------------------------------------------------
 License
-    This file is part of HiSA.
+    This file is part of IHIS.
 
-    HiSA is free software: you can redistribute it and/or modify it
+    IHIS is free software: you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
-    HiSA is distributed in the hope that it will be useful, but WITHOUT
+    IHIS is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with HiSA.  If not, see <http://www.gnu.org/licenses/>.
+    along with IHIS.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -57,24 +57,12 @@ Foam::characteristicWallPressureFvPatchScalarField::characteristicWallPressureFv
 :
     fixedGradientFvPatchScalarField(ptf, p, iF, mapper),
     BlockCoupledBoundary(dynamic_cast<fvPatchField<scalar>&>(*this)),
-#if FOUNDATION >= 7
-    UCoeff_(mapper(ptf.UCoeff_))
-#else
     UCoeff_(ptf.UCoeff_, mapper)
-#endif
 {
-#if FOUNDATION >= 9
-#else
     patchType() = ptf.patchType();
-#endif
-
     // Enforce mapping of values so we have a valid starting value. This
     // constructor is used when reconstructing fields
-#if FOUNDATION >= 7
-    mapper(*this, ptf);
-#else
     this->map(ptf, mapper);
-#endif
 }
 
 
@@ -122,34 +110,13 @@ Foam::characteristicWallPressureFvPatchScalarField::characteristicWallPressureFv
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-#if FOUNDATION >= 11
-void Foam::characteristicWallPressureFvPatchScalarField::map
-(
-    const fvPatchScalarField& ptf,
-    const fvPatchFieldMapper& mapper
-)
-{
-    fixedGradientFvPatchField<scalar>::map(ptf, mapper);
-
-    const characteristicWallPressureFvPatchScalarField& mptf =
-        refCast<const characteristicWallPressureFvPatchScalarField>(ptf);
-
-    mapper(UCoeff_, mptf.UCoeff_);
-}
-
-
-#else
 void Foam::characteristicWallPressureFvPatchScalarField::autoMap
 (
     const fvPatchFieldMapper& m
 )
 {
     fixedGradientFvPatchScalarField::autoMap(m);
-#if FOUNDATION >= 7
-    m(UCoeff_, UCoeff_);
-#else
     UCoeff_.autoMap(m);
-#endif
 }
 
 
@@ -166,7 +133,6 @@ void Foam::characteristicWallPressureFvPatchScalarField::rmap
 
     UCoeff_.rmap(mptf.UCoeff_, addr);
 }
-#endif
 
 
 void Foam::characteristicWallPressureFvPatchScalarField::updateCoeffs()
@@ -179,11 +145,7 @@ void Foam::characteristicWallPressureFvPatchScalarField::updateCoeffs()
     const fvMesh& mesh = patch().boundaryMesh().mesh();
 
     const fluidThermo& thermo =
-#if FOUNDATION >= 10
-        mesh.lookupObject<fluidThermo>(physicalProperties::typeName);
-#else
         mesh.lookupObject<fluidThermo>(basicThermo::dictName);
-#endif
 
     const fvPatchVectorField& Up =
         patch().lookupPatchField<volVectorField, vector>("U");
@@ -305,13 +267,8 @@ Foam::characteristicWallPressureFvPatchScalarField::gradientInternalCoeffs
 void Foam::characteristicWallPressureFvPatchScalarField::write(Ostream& os) const
 {
     fixedGradientFvPatchScalarField::write(os);
-#if FOUNDATION >= 7
-    writeEntry(os, "UCoeff", UCoeff_);
-    writeEntry(os, "value", *this);
-#else
     UCoeff_.writeEntry("UCoeff", os);
     writeEntry("value", os);
-#endif
 }
 
 

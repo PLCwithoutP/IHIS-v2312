@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------*\
 
-    HiSA: High Speed Aerodynamic solver
+    IHIS: In-house Hypersonics Implicit solver
 
     Copyright (C) 2014 Oliver Oxtoby - CSIR, South Africa
     Copyright (C) 2014 Johan Heyns - CSIR, South Africa
@@ -8,20 +8,20 @@
 
 -------------------------------------------------------------------------------
 License
-    This file is part of HiSA.
+    This file is part of IHIS.
 
-    HiSA is free software: you can redistribute it and/or modify it
+    IHIS is free software: you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
-    HiSA is distributed in the hope that it will be useful, but WITHOUT
+    IHIS is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with HiSA.  If not, see <http://www.gnu.org/licenses/>.
+    along with IHIS.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -163,11 +163,7 @@ Foam::movingWallSlipFvPatchVectorField::snGradTransformDiag() const
 void Foam::movingWallSlipFvPatchVectorField::write(Ostream& os) const
 {
     transformFvPatchField<vector>::write(os);
-#if FOUNDATION >= 7
-    writeEntry(os, "value", *this);
-#else
     writeEntry("value", os);
-#endif
 }
 
 

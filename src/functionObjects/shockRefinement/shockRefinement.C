@@ -1,26 +1,26 @@
 /*---------------------------------------------------------------------------*\
 
-    HiSA: High Speed Aerodynamic solver
+    IHIS: In-house Hypersonics Implicit solver
 
     Copyright (C) 2014-2018 Oliver Oxtoby - CSIR, South Africa
     Copyright (C) 2014-2018 Johan Heyns - CSIR, South Africa
 
 -------------------------------------------------------------------------------
 License
-    This file is part of HiSA.
+    This file is part of IHIS.
 
-    HiSA is free software: you can redistribute it and/or modify it
+    IHIS is free software: you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
-    HiSA is distributed in the hope that it will be useful, but WITHOUT
+    IHIS is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with HiSA.  If not, see <http://www.gnu.org/licenses/>.
+    along with IHIS.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -30,11 +30,7 @@ License
 #include "dictionary.H"
 #include "Time.H"
 #include "addToRunTimeSelectionTable.H"
-#if FOUNDATION >= 10
-#include "fvMeshTopoChangersRefiner.H"
-#else
 #include "dynamicRefineFvMesh.H"
-#endif
 #include "fvcGrad.H"
 #include "zeroGradientFvPatchFields.H"
 
@@ -167,16 +163,11 @@ bool Foam::functionObjects::shockRefinement::calc()
             mesh().objectRegistry::store(tmarkedComp.ptr());
         }
     }
-#if FOUNDATION >= 5 or defined(OPENFOAM)
-    volScalarField& markedComp =
-        mesh().lookupObjectRef<volScalarField>("markedComp");
-#else
     volScalarField& markedComp =
         const_cast<volScalarField&>
         (
             mesh().lookupObject<volScalarField>("markedComp")
         );
-#endif
 
     markedComp = pos(compLevel-minCompLevel_);
     markedComp.correctBoundaryConditions();
@@ -204,16 +195,12 @@ bool Foam::functionObjects::shockRefinement::calc()
             mesh().objectRegistry::store(tmarkedExp.ptr());
         }
     }
-#if FOUNDATION >= 5 or defined(OPENFOAM)
-    volScalarField& markedExp =
-        mesh().lookupObjectRef<volScalarField>("markedExp");
-#else
+
     volScalarField& markedExp =
         const_cast<volScalarField&>
         (
             mesh().lookupObject<volScalarField>("markedExp")
         );
-#endif
 
     markedExp = pos(expLevel-minExpLevel_);
     markedExp.correctBoundaryConditions();
@@ -234,17 +221,10 @@ bool Foam::functionObjects::shockRefinement::calc()
     if (refineDict_.valid())
     {
         const labelIOList& cellLevel =
-#if FOUNDATION >= 10
-            dynamic_cast<const fvMeshTopoChangers::refiner&>
-            (
-                mesh().topoChanger()
-            ).meshCutter().cellLevel();
-#else
             dynamic_cast<const dynamicRefineFvMesh&>
             (
                 mesh()
             ).meshCutter().cellLevel();
-#endif
 
         volScalarField& refinementControl =
             const_cast<volScalarField&>
@@ -292,11 +272,7 @@ bool Foam::functionObjects::shockRefinement::read(const dictionary& dict)
 
     Info<< "    Reading shock refinement data\n" << endl;
 
-#if FOUNDATION >= 10
-    if (isA<fvMeshTopoChangers::refiner>(mesh().topoChanger()))
-#else
     if (isA<dynamicRefineFvMesh>(mesh()))
-#endif
     {
         if (!mesh().foundObject<volScalarField>("initCellLevel"))
         {
@@ -313,17 +289,10 @@ bool Foam::functionObjects::shockRefinement::read(const dictionary& dict)
                 zeroGradientFvPatchScalarField::typeName
             );
             const labelList& cellLevel =
-#if FOUNDATION >= 10
-                dynamic_cast<const fvMeshTopoChangers::refiner&>
-                (
-                    mesh().topoChanger()
-                ).meshCutter().cellLevel();
-#else
                 dynamic_cast<const dynamicRefineFvMesh&>
                 (
                     mesh()
                 ).meshCutter().cellLevel();
-#endif
             scalarField& intf = currCellLevel.primitiveFieldRef();
             forAll(cellLevel, cellI)
             {
@@ -393,11 +362,7 @@ bool Foam::functionObjects::shockRefinement::read(const dictionary& dict)
     {
         WarningInFunction
             << this->typeName
-            #if FOUNDATION >= 10
-            << " requires a mesh refiner: "
-            #else
             << " requires a dynamicRefineFvMesh: "
-            #endif
             << "Mesh will not be refined.\n"
             << endl;
     }
@@ -444,11 +409,7 @@ bool Foam::functionObjects::shockRefinement::execute()
     if (refineDict_.valid())
     {
         refineInterval =
-            #if FOUNDATION >= 10
-            readLabel(refineDict_->subDict("topoChanger").lookup("refineInterval"));
-            #else
             readLabel(refineDict_->subDict("dynamicRefineFvMeshCoeffs").lookup("refineInterval"));
-            #endif
     }
 
     if ((mesh().time().timeIndex()+1) % refineInterval == 0)

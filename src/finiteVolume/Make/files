@@ -51,4 +51,4 @@ surfaceInterpolationSchemes/wMUSCL/wMUSCL.C
 
 reconstructionSchemes/reconstructionScheme/reconstructionSchemes.C
 
-LIB = $(FOAM_USER_LIBBIN)/libhisaFiniteVolume
+LIB = $(FOAM_USER_LIBBIN)/libihisFiniteVolume
