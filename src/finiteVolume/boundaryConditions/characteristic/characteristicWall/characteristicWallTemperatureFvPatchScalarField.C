@@ -101,8 +101,8 @@ void Foam::characteristicWallTemperatureFvPatchScalarField::updateCoeffs()
 
     const fvMesh& mesh = patch().boundaryMesh().mesh();
 
-    const fluidThermo& thermo =
-        mesh.lookupObject<fluidThermo>(basicThermo::dictName);
+    const fluid2TThermo& thermo =
+        mesh.lookupObject<fluid2TThermo>(basic2TThermo::dictName);
 
     const fvPatchVectorField& Up =
         patch().lookupPatchField<volVectorField, vector>("U");
@@ -116,7 +116,7 @@ void Foam::characteristicWallTemperatureFvPatchScalarField::updateCoeffs()
     );
     scalarField Tif
     (
-        patch().lookupPatchField<volScalarField, scalar>("T").patchInternalField()
+        patch().lookupPatchField<volScalarField, scalar>("TTR").patchInternalField()
     );
 
     scalarField psiif

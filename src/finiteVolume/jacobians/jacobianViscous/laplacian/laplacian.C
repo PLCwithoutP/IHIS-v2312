@@ -211,7 +211,7 @@ void laplacian::addViscousJacobian(compressibleJacobianMatrix& jacobian)
 {
 
     muLam_    = fvc::interpolate(thermo_.mu());
-    alphaLam_ = fvc::interpolate(thermo_.alphahe());
+    alphaLam_ = fvc::interpolate(thermo_.kappaTR()/thermo_.CvTR());
 
     addFluxTerms(jacobian);
 }

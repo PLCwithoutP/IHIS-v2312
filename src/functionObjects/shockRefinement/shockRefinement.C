@@ -91,7 +91,7 @@ bool Foam::functionObjects::shockRefinement::calc()
     const volScalarField& p =
         mesh().lookupObject<volScalarField>("p");
     const volScalarField& T =
-        mesh().lookupObject<volScalarField>("T");
+        mesh().lookupObject<volScalarField>("TTR");
     volScalarField negMagU(-mag(U));
 
     UPtrList<const volScalarField> fields(4);

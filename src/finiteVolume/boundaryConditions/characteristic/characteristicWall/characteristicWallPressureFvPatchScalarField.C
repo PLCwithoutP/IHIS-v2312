@@ -144,8 +144,8 @@ void Foam::characteristicWallPressureFvPatchScalarField::updateCoeffs()
 
     const fvMesh& mesh = patch().boundaryMesh().mesh();
 
-    const fluidThermo& thermo =
-        mesh.lookupObject<fluidThermo>(basicThermo::dictName);
+    const fluid2TThermo& thermo =
+        mesh.lookupObject<fluid2TThermo>(basic2TThermo::dictName);
 
     const fvPatchVectorField& Up =
         patch().lookupPatchField<volVectorField, vector>("U");
@@ -196,7 +196,7 @@ Foam::characteristicWallPressureFvPatchScalarField::valueInternalCoeffs
     {
         return tmp<scalarField>(new scalarField(patch().size(), scalar(1)));
     }
-    else if (field.member() == "T")
+    else if (field.member() == "TTR")
     {
         return tmp<scalarField>(new scalarField(patch().size(), scalar(0)));
     }
@@ -217,7 +217,7 @@ Foam::characteristicWallPressureFvPatchScalarField::gradientInternalCoeffs
     {
         return -patch().deltaCoeffs();
     }
-    else if (field.member() == "T")
+    else if (field.member() == "TTR")
     {
         return tmp<scalarField>(new scalarField(patch().size(), scalar(0)));
     }

@@ -47,7 +47,7 @@ Foam::characteristicBase::characteristicBase
 :
     UName_("U"),
     pName_("p"),
-    TName_("T"),
+    TName_("TTR"),
     phiName_("phi"),
     rhoName_("rho"),
     URef_(vector::zero),
@@ -83,7 +83,7 @@ characteristicBase
 :
     UName_(dict.lookupOrDefault<word>("UName", "U")),
     pName_(dict.lookupOrDefault<word>("pName", "p")),
-    TName_(dict.lookupOrDefault<word>("TName", "T")),
+    TName_(dict.lookupOrDefault<word>("TName", "TTR")),
     phiName_(dict.lookupOrDefault<word>("phiName", "phi")),
     rhoName_(dict.lookupOrDefault<word>("rhoName", "rho")),
     URef_(dict.lookup("U")),

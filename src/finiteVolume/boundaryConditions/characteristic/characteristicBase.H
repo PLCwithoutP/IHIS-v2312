@@ -99,7 +99,7 @@ protected:
         //- Name of velocity field, default = "p"
         word pName_;
 
-        //- Name of temperature field, default = "T"
+        //- Name of temperature field, default = "TTR"
         word TName_;
 
         //- Name of mass flux field, default = "phi"

@@ -118,8 +118,8 @@ void Foam::characteristicPressureInletOutletPressureFvPatchScalarField::updateCo
     }
 
     const fvMesh& mesh = patch().boundaryMesh().mesh();
-    const fluidThermo& thermo =
-        mesh.lookupObject<fluidThermo>(basicThermo::dictName);
+    const fluid2TThermo& thermo =
+        mesh.lookupObject<fluid2TThermo>(basic2TThermo::dictName);
 
 
     tmp< volScalarField > gamma = thermo.gamma();
