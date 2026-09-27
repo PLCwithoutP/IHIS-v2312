@@ -39,11 +39,11 @@ if (mesh.nInternalFaces())
     tmp< surfaceScalarField > lambda;
     if (mesh.moving())
     {
-        lambda = fvc::interpolate(sqrt(thermo.gamma()/thermo.psi())) + mag((fvc::interpolate(U)&mesh.Sf())-fvc::meshPhi(U))/mesh.magSf();
+        lambda = fvc::interpolate(sqrt(neThermo.gamma()/neThermo.psi())) + mag((fvc::interpolate(U)&mesh.Sf())-fvc::meshPhi(U))/mesh.magSf();
     }
     else
     {
-        lambda = fvc::interpolate(sqrt(thermo.gamma()/thermo.psi())) + mag(fvc::interpolate(U)&mesh.Sf()/mesh.magSf());
+        lambda = fvc::interpolate(sqrt(neThermo.gamma()/neThermo.psi())) + mag(fvc::interpolate(U)&mesh.Sf()/mesh.magSf());
     }
 
     surfaceScalarField amaxSfbyDelta

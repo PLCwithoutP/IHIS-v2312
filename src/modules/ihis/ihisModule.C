@@ -333,7 +333,7 @@ scalar ihisModule::timeStepScaling(const scalar& maxCoNum)
 
     const Time& runTime = time_;
     fvMesh& mesh = mesh_();
-    fluidThermo& thermo = pThermo_();
+    ne2TReactionThermo& neThermo = pThermo_();
     volVectorField& U = U_();
 
     Info << "Mesh region: " << name() << endl;
@@ -538,7 +538,7 @@ void ihisModule::outerIteration()
                 rho,
                 rhoU,
                 rhoE,
-                thermo,
+                neThermo,
                 U,
                 ddtCoeff_(),
                 inviscid_

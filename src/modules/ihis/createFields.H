@@ -29,19 +29,19 @@ License
 Info<< "Reading thermophysical properties\n" << endl;
 pThermo_ =
 (
-    fluidThermo::New(mesh)
+    ne2TReactionThermo::New(mesh)
 );
 Info << endl;
-fluidThermo& thermo = pThermo_();
+ne2TReactionThermo& neThermo = pThermo_();
 
-volScalarField& e = thermo.he();
+volScalarField& e = neThermo.he();
 if (e.name() != "e")
 {
     FatalErrorInFunction
         << "Only energy type internalEnergy supported."
         << nl << exit(FatalError);
 }
-const volScalarField& mu = thermo.mu();
+const volScalarField& mu = neThermo.mu();
 
 if (gMax(mu.internalField()) > 0.0)
 {
@@ -88,7 +88,7 @@ scalarVars_.set
             IOobject::READ_IF_PRESENT,
             IOobject::AUTO_WRITE
         ),
-        thermo.rho(),
+        neThermo.rho(),
         calculatedFvPatchScalarField::typeName
     )
 );
@@ -116,15 +116,15 @@ volScalarField TZero
 (
     IOobject("TZero", runTime.timeName(), mesh),
     mesh,
-    dimensionedScalar("0", thermo.T().dimensions(), SMALL)
+    dimensionedScalar("0", neThermo.T().dimensions(), SMALL)
 );
 volScalarField pZero
 (
     IOobject("pZero", runTime.timeName(), mesh),
     mesh,
-    dimensionedScalar("0", thermo.p().dimensions(), SMALL)
+    dimensionedScalar("0", neThermo.p().dimensions(), SMALL)
 );
-eZero_.reset(new volScalarField("eZero", thermo.he(pZero, TZero)));
+eZero_.reset(new volScalarField("eZero", neThermo.he(pZero, TZero)));
 
 scalarVars_.set
 (
@@ -167,7 +167,7 @@ Info<< "Laminar analysis selected.\n" << endl;
 Info<< "Creating flux scheme\n" << endl;
 flux_ =
 (
-    fluxScheme::New(mesh.schemesDict(), thermo, rho, U, rhoU, rhoE)
+    fluxScheme::New(mesh.schemesDict(), neThermo, rho, U, rhoU, rhoE)
 );
 Info << endl;
 

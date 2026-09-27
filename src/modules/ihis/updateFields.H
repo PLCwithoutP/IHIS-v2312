@@ -63,7 +63,7 @@ License
         mesh,
         TMin
     );
-    volScalarField eBound(thermo.he(thermo.p(), TBound));
+    volScalarField eBound(neThermo.he(neThermo.p(), TBound));
 
     if (max(neg(e-eBound)).value() > 0.5)
     {
@@ -79,7 +79,7 @@ License
     if (TMax.value() < GREAT)
     {
         TBound == TMax;
-        eBound == thermo.he(thermo.p(), TBound);
+        eBound == neThermo.he(neThermo.p(), TBound);
         if (max(pos(e-eBound)).value() > 0.5)
         {
             e = min(e, eBound);
@@ -90,7 +90,7 @@ License
     }
 
     // Calc T and psi from e
-    thermo.correct();
+    neThermo.correct();
 
     // Update p from rho
     // Use Newton's method to converge rho = rho(p)
@@ -104,13 +104,13 @@ License
     while (true)
     {
         // Calculate rho & psi from new p
-        thermo.correct();
+        neThermo.correct();
 
         //Update p
         volScalarField::Internal deltap
         (
            -(
-                thermo.rho()().internalField()-rho.internalField()
+                neThermo.rho()().internalField()-rho.internalField()
             )/psi.internalField()
         );
         p.ref() += deltap;
@@ -148,11 +148,11 @@ License
         T.boundaryFieldRef() == min(T.boundaryField(), TMax.value());
     }
 
-    e.boundaryFieldRef() == thermo.he(p, T)->boundaryField();
+    e.boundaryFieldRef() == neThermo.he(p, T)->boundaryField();
 
-    thermo.correct();                       // NOTE: Correct psi boundaryField
+    neThermo.correct();                       // NOTE: Correct psi boundaryField
 
-    tmp<volScalarField> trho = thermo.rho();
+    tmp<volScalarField> trho = neThermo.rho();
     forAll(rho.boundaryField(), patchi)
     {
         // Substitute wall pressure with zero grad to avoid unphysical values

@@ -28,12 +28,12 @@ License
     pseudotimeControl& solnControl = solnControl_();
     fvMesh& mesh = mesh_();
 
-    fluidThermo& thermo = pThermo_();
+    ne2TReactionThermo& neThermo = pThermo_();
 
-    volScalarField& p = thermo.p();
-    volScalarField& e = thermo.he();
-    volScalarField& T = thermo.T();
-    const volScalarField& psi = thermo.psi();
+    volScalarField& p = neThermo.p();
+    volScalarField& e = neThermo.eTR();
+    volScalarField& T = neThermo.TTR();
+    const volScalarField& psi = neThermo.psi();
 
     volVectorField& U = U_();
 

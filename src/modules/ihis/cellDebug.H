@@ -9,7 +9,7 @@ if (cellDebugging_)
     tmp<surfaceVectorField> phiUTauMC;
     if (!inviscid_)
     {
-        volScalarField muLam("muLam", thermo.mu());
+        volScalarField muLam("muLam", neThermo.mu());
         phiUSnGradMuU = -fvc::interpolate(muLam)*fvc::snGrad(U)*mesh.magSf();
         phiUTauMC = -mesh.Sf() & fvc::interpolate(tauMC_());
     }
@@ -22,10 +22,10 @@ if (cellDebugging_)
             << "rhoU:" << tab << rhoU[debugCell_] << nl
             << "rhoE:" << tab << rhoE[debugCell_] << nl
             << "U:" << tab << rhoU[debugCell_]/rho[debugCell_] << nl
-            << "p:" << tab << thermo.p()[debugCell_] << nl
+            << "p:" << tab << neThermo.p()[debugCell_] << nl
             << "0.5*rho|U|^2:" << tab << 0.5*rhoMagUSqr << nl
             << "rhoe:" << tab << rhoE[debugCell_]-0.5*rhoMagUSqr << nl
-            << "T:" << tab << thermo.T()[debugCell_] << nl
+            << "T:" << tab << neThermo.T()[debugCell_] << nl
             << "Volume:" << tab << mesh.V()[debugCell_] << nl
             << "deltaT:" << tab << 1.0/(rPseudoDeltaT[debugCell_]+SMALL) << endl;
         if (localTimestepping_)
@@ -79,10 +79,10 @@ if (cellDebugging_)
                     << "\trhoU:" << tab << rhoU[otherCellI] << nl
                     << "\trhoE:" << tab << rhoE[otherCellI] << nl
                     << "\tU:" << tab << rhoU[otherCellI]/rho[otherCellI] << nl
-                    << "\tp:" << tab << thermo.p()[otherCellI] << nl
+                    << "\tp:" << tab << neThermo.p()[otherCellI] << nl
                     << "\t0.5*rho|U|^2:" << tab << 0.5*rhoMagUSqr << nl
                     << "\trhoe:" << tab << rhoE[otherCellI]-0.5*rhoMagUSqr << nl
-                    << "\tT:" << tab << thermo.T()[otherCellI] << nl
+                    << "\tT:" << tab << neThermo.T()[otherCellI] << nl
                     << "\tVolume:" << tab << mesh.V()[otherCellI] << nl
                     << "\tdeltaT:" << tab << 1.0/(rPseudoDeltaT[otherCellI]+SMALL) << endl;
                 if (localTimestepping_)

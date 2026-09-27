@@ -28,11 +28,11 @@ License
 //    Info << "Minimum rho: " << min(rho.dimensionedInternalField()).value() << endl;
 //    Info << "Maximum rho: " << max(rho.dimensionedInternalField()).value() << endl;
 //    Info << "Minimum e: " << mine << endl;
-//    Info << "Minimum temp: " << min(thermo.T().dimensionedInternalField()).value() << endl;
+//    Info << "Minimum temp: " << min(neThermo.T().dimensionedInternalField()).value() << endl;
 
     if (mine <= 0.0)
     {
-        Info << "Minimum temp: " << min(thermo.T().internalField()).value() << endl;
+        Info << "Minimum temp: " << min(neThermo.T().internalField()).value() << endl;
         Info << "Minimum press: " << min(p.internalField()).value() << endl;
         Info << "Minimum rho: " << min(rho.internalField()).value() << endl;
         Info << "Minimum e: " << mine << endl;
@@ -41,7 +41,7 @@ License
         {
             if (e[i] <= mine)
             {
-                Pout << "Negative e at cell " << i << " @ " << mesh.C()[i] << " U: " << U[i] << " rho: " << rho[i] << " T: " << thermo.T()[i] << endl;
+                Pout << "Negative e at cell " << i << " @ " << mesh.C()[i] << " U: " << U[i] << " rho: " << rho[i] << " T: " << neThermo.T()[i] << endl;
             }
         }
     }

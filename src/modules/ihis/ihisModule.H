@@ -47,7 +47,7 @@ Authors
 
 #include "solverModule.H"
 #include "pimpleControl.H"
-#include "fluidThermo.H"
+#include "ne2TReactionThermo.H"
 #include "zeroGradientFvPatchFields.H"
 #include "fluxScheme.H"
 #include "pseudotimeControl/pseudotimeControl.H"
@@ -88,7 +88,7 @@ protected:
 
         autoPtr< pseudotimeControl > solnControl_;
 
-        autoPtr<fluidThermo> pThermo_;
+        autoPtr<ne2TReactionThermo> pThermo_;
 
         autoPtr<volVectorField> U_;
 
@@ -100,7 +100,7 @@ protected:
         autoPtr<surfaceScalarField> phiEp_;
         autoPtr<surfaceVectorField> Up_;
 
-        // The value of thermo.he() at T = 0 and p = 0, used as offset to get
+        // The value of neThermo.he() at T = 0 and p = 0, used as offset to get
         // absolute internal energy
         autoPtr<volScalarField> eZero_;
 

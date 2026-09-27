@@ -28,7 +28,7 @@ License
     fv::options& fvOptions(*fvOptions_);
     volScalarField rhoSource(fvOptions(rho) & rho);
     volVectorField rhoUSource((fvOptions(rho, U) & U) + rhoSource*U);
-    volScalarField rhoESource((fvOptions(rho, thermo.he()) & thermo.he()) + (rhoUSource & U) + rhoSource*thermo.he());
+    volScalarField rhoESource((fvOptions(rho, neThermo.he()) & neThermo.he()) + (rhoUSource & U) + rhoSource*neThermo.he());
 
     // Construct cont eqn: [A] \Delta W = [R]
     rhoR =
@@ -52,8 +52,8 @@ License
     if (!inviscid_)
     {
         // Laminar transport properties (no turbulence model in IHIS)
-        volScalarField muLam("muLam", thermo.mu());
-        volScalarField alphaLam("alphaLam", thermo.alphahe());
+        volScalarField muLam("muLam", neThermo.mu());
+        volScalarField alphaLam("alphaLam", neThermo.alphahe());
 
         volTensorField& tauMC = tauMC_();
         tauMC = muLam*dev2(Foam::T(fvc::grad(U)));
@@ -71,7 +71,7 @@ License
         );
         rhoER += fvc::div(sigmaDotU);
 
-        volScalarField eCalc("eCalc", rhoE/rho-0.5*magSqr(U)); // prevent e inheriting BC from T in thermo
+        volScalarField eCalc("eCalc", rhoE/rho-0.5*magSqr(U)); // prevent e inheriting BC from T in neThermo
         rhoER += fvc::laplacian(alphaLam, eCalc, "laplacian(alphaLam,e)");
     }
 
