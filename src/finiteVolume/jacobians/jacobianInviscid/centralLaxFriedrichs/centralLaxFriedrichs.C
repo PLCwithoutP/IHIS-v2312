@@ -52,7 +52,7 @@ centralLaxFriedrichs::centralLaxFriedrichs
     const volScalarField& rho,
     const volVectorField& rhoU,
     const volScalarField& rhoE,
-    const fluidThermo& thermo
+    const fluid2TThermo& thermo
 )
  :
     laxFriedrichs(dict, mesh, rho, rhoU, rhoE, thermo),

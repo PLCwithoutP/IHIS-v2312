@@ -71,7 +71,7 @@ class discreteLaxFriedrichs
         const volScalarField& rho_;
         const volVectorField& rhoU_;
         const volScalarField& rhoE_;
-        const fluidThermo& thermo_;
+        const fluid2TThermo& thermo_;
         tmp< surfaceScalarField > lambdaConv_;
         tmp< volScalarField > gamma_;
         autoPtr< tmp<surfaceScalarField> > meshPhi_;
@@ -93,7 +93,7 @@ class discreteLaxFriedrichs
             const volScalarField& rho,
             const volVectorField& rhoU,
             const volScalarField& rhoE,
-            const fluidThermo& thermo
+            const fluid2TThermo& thermo
         );
 
         virtual void addInviscidJacobian(compressibleJacobianMatrix& jacobian);

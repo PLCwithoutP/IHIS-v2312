@@ -43,7 +43,7 @@ autoPtr<jacobianInviscid> jacobianInviscid::New
     const volScalarField& rho,
     const volVectorField& rhoU,
     const volScalarField& rhoE,
-    const fluidThermo& thermo
+    const fluid2TThermo& thermo
 )
 {
     word jacobianInviscidTypeName;
