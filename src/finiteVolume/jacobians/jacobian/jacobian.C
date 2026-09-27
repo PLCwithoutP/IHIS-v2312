@@ -205,7 +205,7 @@ jacobian::jacobian
     const volScalarField& rho,
     const volVectorField& rhoU,
     const volScalarField& rhoE,
-    const fluidThermo& thermo,
+    const fluid2TThermo& thermo,
     const volVectorField& U,
     const scalarField& ddtCoeff,
     const bool& inviscid
