@@ -47,7 +47,7 @@ Authors
 
 #include "jacobianInviscid.H"
 #include "jacobianMatrix.H"
-#include "fluidThermo.H"
+#include "fluid2TThermo.H"
 #include "fvjMatrix.H"
 #include "laxFriedrichs.H"
 

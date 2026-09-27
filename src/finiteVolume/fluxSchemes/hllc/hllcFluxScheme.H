@@ -44,7 +44,7 @@ Authors
 
 #include "fluxScheme.H"
 #include "surfaceMesh.H"
-#include "fluidThermo.H"
+#include "fluid2TThermo.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

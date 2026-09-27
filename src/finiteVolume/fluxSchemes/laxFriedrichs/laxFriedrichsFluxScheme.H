@@ -46,7 +46,7 @@ Authors
 #define laxFriedrichsFluxScheme_H
 
 #include "fluxScheme.H"
-#include "fluidThermo.H"
+#include "fluid2TThermo.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

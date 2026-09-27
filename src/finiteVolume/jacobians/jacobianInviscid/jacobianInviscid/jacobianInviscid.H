@@ -47,7 +47,7 @@ Authors
 #include "volFields.H"
 #include "autoPtr.H"
 #include "runTimeSelectionTables.H"
-#include "fluidThermo.H"
+#include "fluid2TThermo.H"
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

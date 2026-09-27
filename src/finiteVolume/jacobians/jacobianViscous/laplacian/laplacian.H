@@ -44,7 +44,7 @@ Authors
 
 #include "jacobianViscous.H"
 #include "jacobianMatrix.H"
-#include "fluidThermo.H"
+#include "fluid2TThermo.H"
 #include "fvjMatrix.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

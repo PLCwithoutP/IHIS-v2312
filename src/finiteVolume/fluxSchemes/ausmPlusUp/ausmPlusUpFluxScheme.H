@@ -44,7 +44,7 @@ Authors
 #define ausmPlusUpFluxScheme_H
 
 #include "fluxScheme.H"
-#include "fluidThermo.H"
+#include "fluid2TThermo.H"
 //#include "upwind.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
