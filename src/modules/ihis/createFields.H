@@ -39,16 +39,9 @@ volScalarField& e = neThermo.eTR();
 tmp<volScalarField> tmu = neThermo.mu();
 const volScalarField& mu = tmu();
 
-if (gMax(mu.internalField()) > 0.0)
-{
-    inviscid_ = false;
-    Info << "Viscous analysis detected" << nl << endl;
-}
-else
-{
-    inviscid_ = true;
-    Info << "Inviscid analysis detected" << nl << endl;
-}
+inviscid_ = neThermo.getOrDefault<bool>("inviscid", false);
+Info<< (inviscid_ ? "Inviscid" : "Viscous")
+    << " analysis detected" << nl << endl;
 
 Info<< "Reading field U" << nl << endl;
 U_.reset
@@ -285,4 +278,3 @@ if (!inviscid_)
 
 #include "createFvOptions.H"
 fvOptions_ = &fvOptions;
-

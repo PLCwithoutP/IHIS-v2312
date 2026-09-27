@@ -1,0 +1,80 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2412                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volVectorField;
+    object      U;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+#include "initialConditions"
+
+dimensions      [0 1 -1 0 0 0 0];
+
+internalField   uniform (0 0 0);
+
+boundaryField
+{
+    inlet
+    {
+        type            fixedValue;
+        value           uniform $velocityValue;
+    }
+
+    cone
+    {
+        type            slip;
+    }
+    /*{
+        // Maxwell velocity slip boundary condition.
+        // Applies first-order slip from kinetic theory (Maxwell, 1879).
+        // Acts on U through the partialSlip Robin blending structure.
+        // The slip fraction is computed from the mean free path at each
+        // wall face — no fixed Kn assumption is made.
+        type                maxwellSlipU;
+
+        // Momentum accommodation coefficient [-]
+        // alpha = 1: fully diffuse reflection.
+        // Reduces to (2-alpha)/alpha = 1 in the Maxwell prefactor.
+        accommodationCoeff  $accommodationCoeff;
+
+        // Wall velocity [m/s] — stationary cone surface
+        Uwall               uniform (0 0 0);
+
+        // Thermal creep: tangential TTR gradient drives slip along the wall.
+        // Active here — strong tangential temperature gradients exist
+        // from the stagnation region to the cone shoulder.
+        thermalCreep        false;
+
+        // Curvature: non-equilibrium stress correction for curved surfaces.
+        // Active here — blunted cone nose has significant surface curvature.
+        curvature           false;
+
+        value               uniform (0 0 0);
+    }*/
+
+    wedge1
+    {
+        type            wedge;
+    }
+
+    wedge2
+    {
+        type            wedge;
+    }
+
+    outlet
+    {
+        type            zeroGradient;
+    }
+}
+
+
+// ************************************************************************* //

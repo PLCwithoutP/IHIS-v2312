@@ -1,0 +1,32 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v1706                                 |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      initialConditions;
+}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+TTRValue  144.4;
+TVibValue 144.4;
+TwallValue  297.2;
+
+pressureValue  21.9139;
+
+velocityValue  (2764.5 0 0);
+
+N2_mass_fraction 1;
+
+// Thermal and momentum accommodation coefficient [-]
+// alpha = 1: fully diffuse reflection (Maxwell/Smoluchowski standard assumption)
+accommodationCoeff 1.0;
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
