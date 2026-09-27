@@ -1,8 +1,101 @@
 #! /bin/bash
 
+SRC_ROOT="$(cd "$(dirname "$0")" && pwd)"
+
+dash_line() {
+  msg="$*"
+  # Detect terminal width with fallbacks
+  cols="${COLUMNS:-$(tput cols 2>/dev/null || stty size 2>/dev/null | awk '{print $2}' || echo 80)}"
+
+  # If too narrow, just print the message
+  [ "$cols" -le $((${#msg} + 2)) ] && { printf '%s\n' "$msg"; return; }
+
+  pad=$(( (cols - ${#msg}) / 2 ))
+
+  # left dashes
+  printf '%*s' "$pad" '' | tr ' ' '-'
+  # message
+  printf '%s' "$msg"
+  # right dashes
+  printf '%*s' "$pad" '' | tr ' ' '-'
+
+  # add one more dash if width is odd
+  [ $(( ${#msg} + 2*pad )) -lt "$cols" ] && printf -- '-'
+  printf '\n'
+}
+
+# ---------------------------------------------------------------
+# Mutation++ opt-in block — NEW
+# User sets in .bashrc before running:
+#   export WITH_MUTATION_PP=1
+#   export MPP_DIRECTORY=/path/to/Mutationpp
+# Without these, builds exactly as before.
+# ---------------------------------------------------------------
+if [ -n "$WITH_MUTATION_PP" ]; then
+    dash_line " Mutation++ support enabled "
+
+    # Validate — all three must be set in .bashrc before running Allwmake
+    for var in MPP_DIRECTORY MPP_INCLUDE MPP_LIB EIGEN_INCLUDE; do
+        if [ -z "${!var}" ]; then
+            echo "ERROR: $var is not set."
+            echo "       Add it to .bashrc and run: source ~/.bashrc"
+            exit 1
+        fi
+    done
+
+    echo "  MPP_INCLUDE    = $MPP_INCLUDE"
+    echo "  MPP_LIB        = $MPP_LIB"
+    echo "  EIGEN_INCLUDE  = $EIGEN_INCLUDE"
+else
+    dash_line " Building without Mutation++ (default) "
+fi
+# ---------------------------------------------------------------
+
+echo " "
+echo " "
+dash_line " neTC2TLib "
+printf '%*s\n' "$(tput cols)" '' | tr ' ' '#'
+cd ./thermophysicalModels/neTCLib
+./Allwmake
+printf '%*s\n' "$(tput cols)" '' | tr ' ' '#'
+cd ../TCLibraryBase
+echo " "
+echo " "
+dash_line " Thermochemical Library Interface "
+./Allwmake
+printf '%*s\n' "$(tput cols)" '' | tr ' ' '#'
+dash_line " neTCLib Compilation is completed "
+echo " "
+echo " "
+cd ../..
+dash_line " Finite Volume "
+printf '%*s\n' "$(tput cols)" '' | tr ' ' '#'
 wmake finiteVolume
+echo " "
+echo " "
+dash_line " Preconditioners "
+printf '%*s\n' "$(tput cols)" '' | tr ' ' '#'
 wmake preconditioners
+echo " "
+echo " "
+dash_line " Numeric Solvers "
+printf '%*s\n' "$(tput cols)" '' | tr ' ' '#'
 wmake solvers
+echo " "
+echo " "
+dash_line " Function Objects "
+printf '%*s\n' "$(tput cols)" '' | tr ' ' '#'
 wmake functionObjects
+echo " "
+echo " "
+dash_line " Mesh Rebalancing "
+printf '%*s\n' "$(tput cols)" '' | tr ' ' '#'
 wmake meshRebalancing
+echo " "
+echo " "
+dash_line " IHIS solver "
+printf '%*s\n' "$(tput cols)" '' | tr ' ' '#'
 cd modules && { ./Allwmake; cd ..; }
+dash_line " ihis/src Compilation is completed "
+echo " "
+echo " "

@@ -1,0 +1,28 @@
+EXE_INC = \
+    -I$(LIB_SRC)/finiteVolume/lnInclude \
+    -I$(LIB_SRC)/meshTools/lnInclude \
+    -I$(LIB_SRC)/ODE/lnInclude \
+    -I$(LIB_SRC)/transportModels/compressible/lnInclude \
+    -I$(LIB_SRC)/thermophysicalModels/reactionThermo/lnInclude \
+    -I$(LIB_SRC)/thermophysicalModels/basic/lnInclude \
+    -I$(LIB_SRC)/thermophysicalModels/specie/lnInclude \
+    -I$(LIB_SRC)/thermophysicalModels/thermophysicalProperties/lnInclude \
+    -I../../../neTCLib/2T/basic/lnInclude \
+    -I../../../neTCLib/2T/specie/lnInclude \
+    -I../../../neTCLib/2T/reactionThermo/lnInclude \
+    -I../../tcLibraryInterface \
+    -I../../compositionInterface
+
+LIB_LIBS = \
+    -L$(FOAM_USER_LIBBIN) \
+    -lneTCLib_2T \
+    -lneTCspecie_2T \
+    -lneReactionThermophysicalModels \
+    -lfiniteVolume \
+    -lmeshTools \
+    -lODE \
+    -lcompressibleTransportModels \
+    -lfluidThermophysicalModels \
+    -lreactionThermophysicalModels \
+    -lspecie \
+    -lthermophysicalProperties

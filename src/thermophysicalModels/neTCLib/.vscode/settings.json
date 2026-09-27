@@ -1,0 +1,31 @@
+{
+    "files.associations": {
+        "blottnerEuckenTransport.C": "cpp",
+        "neThermo.C": "cpp",
+        "nexaFoam.C": "cpp",
+        "cmath": "cpp",
+        "complex": "cpp",
+        "dimensionedScalar.C": "cpp",
+        "chrono": "cpp",
+        "typeindex": "cpp",
+        "typeinfo": "cpp",
+        "ne2TThermos.C": "cpp",
+        "thermo2T.C": "cpp",
+        "basic2TThermo.C": "cpp",
+        "wallLubricationModel.C": "cpp",
+        "he2TThermo.C": "cpp",
+        "ne2TThermo.C": "cpp",
+        "heNe2TThermo.C": "cpp",
+        "fluid2TThermo.C": "cpp",
+        "basic2TThermoTemplates.C": "cpp",
+        "ne2TZoneThermos.C": "cpp",
+        "hNe2TThermo.C": "cpp",
+        "energy2TJumpFvPatchScalarField.C": "cpp",
+        "energy2TJumpAMIFvPatchScalarField.C": "cpp",
+        "fixed2TEnergyFvPatchScalarField.C": "cpp",
+        "gradient2TEnergyFvPatchScalarField.C": "cpp",
+        "mixed2TEnergyFvPatchScalarField.C": "cpp",
+        "*.tcc": "cpp",
+        "GeometricField.C": "cpp"
+    }
+}

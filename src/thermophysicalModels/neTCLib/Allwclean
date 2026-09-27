@@ -1,0 +1,37 @@
+#!/bin/bash
+
+source ~/.bashrc
+
+dash_line() {
+  msg="$*"
+  # Detect terminal width with fallbacks
+  cols="${COLUMNS:-$(tput cols 2>/dev/null || stty size 2>/dev/null | awk '{print $2}' || echo 80)}"
+
+  # If too narrow, just print the message
+  [ "$cols" -le $((${#msg} + 2)) ] && { printf '%s\n' "$msg"; return; }
+
+  pad=$(( (cols - ${#msg}) / 2 ))
+
+  # left dashes
+  printf '%*s' "$pad" '' | tr ' ' '-'
+  # message
+  printf '%s' "$msg"
+  # right dashes
+  printf '%*s' "$pad" '' | tr ' ' '-'
+
+  # add one more dash if width is odd
+  [ $(( ${#msg} + 2*pad )) -lt "$cols" ] && printf -- '-'
+  printf '\n'
+}
+
+dash_line " Cleaning specie/ "
+cd ./2T/specie
+wclean
+cd ..
+dash_line " Cleaning basic/ "
+cd ./basic
+wclean
+cd ..
+dash_line " Cleaning reactionThermo/ "
+cd ./reactionThermo
+wclean

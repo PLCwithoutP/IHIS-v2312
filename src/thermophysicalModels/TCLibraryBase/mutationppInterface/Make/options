@@ -1,0 +1,30 @@
+
+ifdef WITH_MUTATION_PP
+    MPP_INC    = -I$(MPP_INCLUDE)
+    EIGEN_INC  = -I$(EIGEN_INCLUDE)
+    MPP_LINK   = -L$(MPP_LIB) -lmutation++ -Wl,-rpath,$(MPP_LIB)
+    MPP_DEFINE = -DWITH_MUTATION_PP
+else
+    MPP_INC    =
+    EIGEN_INC  =
+    MPP_LINK   =
+    MPP_DEFINE =
+endif
+
+EXE_INC = \
+    $(MPP_INC)                                          \
+    $(EIGEN_INC)                                        \
+    $(MPP_DEFINE)                                       \
+    -Wno-ignored-qualifiers                             \
+    -Wno-sign-compare                                   \
+    -Wno-unused-variable                                \
+    -Wno-unused-function                                \
+    -Wno-old-style-cast                                 \
+    -I$(FOAM_SRC)/finiteVolume/lnInclude                \
+    -I../chemistryInterface/neTCChemistry/lnInclude     \
+    -I../../neTCLib/lnInclude                           
+
+LIB_LIBS = \
+    $(MPP_LINK)                                         \
+    -L$(FOAM_USER_LIBBIN) -lneTCChemistryModel          \
+    -lfiniteVolume                                      

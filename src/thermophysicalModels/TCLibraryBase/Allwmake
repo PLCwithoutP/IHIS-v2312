@@ -1,0 +1,38 @@
+#!/bin/bash
+
+source ~/.bashrc
+
+dash_line() {
+  msg="$*"
+  cols="${COLUMNS:-$(tput cols 2>/dev/null || stty size 2>/dev/null | awk '{print $2}' || echo 80)}"
+  [ "$cols" -le $((${#msg} + 2)) ] && { printf '%s\n' "$msg"; return; }
+  pad=$(( (cols - ${#msg}) / 2 ))
+  printf '%*s' "$pad" '' | tr ' ' '-'
+  printf '%s' "$msg"
+  printf '%*s' "$pad" '' | tr ' ' '-'
+  [ $(( ${#msg} + 2*pad )) -lt "$cols" ] && printf -- '-'
+  printf '\n'
+}
+
+# Step 1: neTCChemistry — must be built before libTCLibraryBase
+# because neTCChemistryAdapter.H includes BasicNeChemistryModel.H
+# from neTCChemistry/lnInclude
+dash_line " Compiling chemistryInterface/neTCChemistry/ "
+cd ./chemistryInterface/neTCChemistry
+wmake
+cd ../..
+
+# Step 2: mutationppInterface
+if [ -n "$WITH_MUTATION_PP" ]; then
+    dash_line " Compiling mutationppInterface/ "
+    cd ./mutationppInterface
+    wmake
+    cd ..
+else
+    dash_line " Skipping mutationppInterface (WITH_MUTATION_PP not set) "
+fi
+
+# Step 3: TCLibraryBase — compiles tcLibraryInterface.C + chemistryInterface.C
+# into libTCLibraryBase
+dash_line " Compiling TCLibraryBase/ "
+wmake

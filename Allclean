@@ -1,5 +1,78 @@
 #! /bin/sh
 
-wclean all applications
-wclean all src
+dash_line() {
+  msg="$*"
+  # Detect terminal width with fallbacks
+  cols="${COLUMNS:-$(tput cols 2>/dev/null || stty size 2>/dev/null | awk '{print $2}' || echo 80)}"
+
+  # If too narrow, just print the message
+  [ "$cols" -le $((${#msg} + 2)) ] && { printf '%s\n' "$msg"; return; }
+
+  pad=$(( (cols - ${#msg}) / 2 ))
+
+  # left dashes
+  printf '%*s' "$pad" '' | tr ' ' '-'
+  # message
+  printf '%s' "$msg"
+  # right dashes
+  printf '%*s' "$pad" '' | tr ' ' '-'
+
+  # add one more dash if width is odd
+  [ $(( ${#msg} + 2*pad )) -lt "$cols" ] && printf -- '-'
+  printf '\n'
+}
+printf '%*s\n' "$(tput cols)" '' | tr ' ' 'x'
+dash_line " Cleaning started " 
+printf '%*s\n' "$(tput cols)" '' | tr ' ' 'x'
+echo " "
+echo " "
+dash_line " Cleaning neTC2TLib "
+printf '%*s\n' "$(tput cols)" '' | tr ' ' '#'
+cd ./src/thermophysicalModels/neTCLib
+./Allwclean
+dash_line " Cleaning Thermochemical Library Interface "
+printf '%*s\n' "$(tput cols)" '' | tr ' ' '#'
+cd ../TCLibraryBase
+./Allwclean
+cd ../..
+echo " "
+echo " "
+dash_line " Cleaning Finite Volume "
+wclean finiteVolume
+printf '%*s\n' "$(tput cols)" '' | tr ' ' '#'
+echo " "
+echo " "
+dash_line " Cleaning Preconditioners "
+wclean preconditioners
+printf '%*s\n' "$(tput cols)" '' | tr ' ' '#'
+echo " "
+echo " "
+dash_line " Cleaning Numerical Solvers "
+wclean solvers
+printf '%*s\n' "$(tput cols)" '' | tr ' ' '#'
+echo " "
+echo " "
+dash_line " Cleaning Function Objects "
+wclean functionObjects
+printf '%*s\n' "$(tput cols)" '' | tr ' ' '#'
+echo " "
+echo " "
+dash_line " Cleaning Mesh Rebalancing "
+wclean meshRebalancing
+printf '%*s\n' "$(tput cols)" '' | tr ' ' '#'
+echo " "
+echo " "
+dash_line " Cleaning IHIS "
+cd modules
+wclean ihis
+wclean solver
+printf '%*s\n' "$(tput cols)" '' | tr ' ' '#'
+echo " "
+echo " "
+printf '%*s\n' "$(tput cols)" '' | tr ' ' 'x'
+dash_line " Cleaning is completed "
+printf '%*s\n' "$(tput cols)" '' | tr ' ' 'x'
+echo " "
+echo " "
+
 

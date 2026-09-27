@@ -1,0 +1,13 @@
+{
+    "files.associations": {
+        "blottnerEuckenTransport.C": "cpp",
+        "neThermo.C": "cpp",
+        "nexaFoam.C": "cpp",
+        "cmath": "cpp",
+        "complex": "cpp",
+        "dimensionedScalar.C": "cpp",
+        "chrono": "cpp",
+        "typeindex": "cpp",
+        "typeinfo": "cpp"
+    }
+}

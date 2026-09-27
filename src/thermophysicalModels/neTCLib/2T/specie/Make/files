@@ -1,0 +1,4 @@
+specie2T/specie2T.C
+reaction/neReactions/makeNeReactions.C
+
+LIB = $(FOAM_USER_LIBBIN)/libneTCspecie_2T

@@ -1,0 +1,30 @@
+#!/bin/bash
+
+source ~/.bashrc
+
+dash_line() {
+  msg="$*"
+  cols="${COLUMNS:-$(tput cols 2>/dev/null || stty size 2>/dev/null | awk '{print $2}' || echo 80)}"
+  [ "$cols" -le $((${#msg} + 2)) ] && { printf '%s\n' "$msg"; return; }
+  pad=$(( (cols - ${#msg}) / 2 ))
+  printf '%*s' "$pad" '' | tr ' ' '-'
+  printf '%s' "$msg"
+  printf '%*s' "$pad" '' | tr ' ' '-'
+  [ $(( ${#msg} + 2*pad )) -lt "$cols" ] && printf -- '-'
+  printf '\n'
+}
+
+# Reverse build order
+
+dash_line " Cleaning TCLibraryBase/ "
+wclean
+
+dash_line " Cleaning mutationppInterface/ "
+cd mutationppInterface
+wclean
+cd ..
+
+dash_line " Cleaning chemistryInterface/neTCChemistry/ "
+cd ./chemistryInterface/neTCChemistry
+wclean
+cd ../..

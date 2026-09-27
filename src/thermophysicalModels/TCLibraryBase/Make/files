@@ -1,0 +1,8 @@
+tcLibraryInterface/tcLibraryInterface.C
+chemistryInterface/chemistryInterface.C
+
+mutationppInterface/mutationppWrapper.C
+chemistryInterface/mppChemistry/mppEulerImplicit.C
+
+
+LIB = $(FOAM_USER_LIBBIN)/libTCLibraryBase

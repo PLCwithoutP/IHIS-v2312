@@ -1,0 +1,24 @@
+{
+  "configurations": [
+    {
+      "name": "OpenFOAM-v2412",
+      "includePath": [
+        "${workspaceFolder}/**",
+        "/home/t12022124597/OF2412/OpenFOAM-v2412/src/**",
+        "/home/t12022124597/Desktop/codeProjects/masterThesisCode/**",
+        "/home/furkant/OpenFOAM/OpenFOAM-v2412/src/**",
+        "/home/furkant/masterThesis/nexaFoam-1.0.7.1/**"
+      ],
+      "defines": [
+        "WM_DP",                      
+        "FOAM_EXTEND",                
+        "__linux__"
+      ],
+      "compilerPath": "/usr/bin/g++",
+      "cStandard": "c11",
+      "cppStandard": "c++11",
+      "intelliSenseMode": "linux-gcc-x64"
+    }
+  ],
+  "version": 4
+}
