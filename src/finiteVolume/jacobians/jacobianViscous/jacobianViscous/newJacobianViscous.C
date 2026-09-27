@@ -43,7 +43,7 @@ autoPtr<jacobianViscous> jacobianViscous::New
     const volScalarField& rho,
     const volVectorField& rhoU,
     const volScalarField& rhoE,
-    const fluidThermo& thermo
+    const fluid2TThermo& thermo
 )
 {
     word jacobianViscousTypeName;

@@ -53,7 +53,7 @@ laplacian::laplacian
     const volScalarField& rho,
     const volVectorField& rhoU,
     const volScalarField& rhoE,
-    const fluidThermo& thermo
+    const fluid2TThermo& thermo
 )
  :
     jacobianViscous(typeName, dict),

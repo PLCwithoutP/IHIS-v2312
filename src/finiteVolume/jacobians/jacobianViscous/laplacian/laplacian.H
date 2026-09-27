@@ -67,7 +67,7 @@ class laplacian
         const volScalarField& rho_;
         const volVectorField& rhoU_;
         const volScalarField& rhoE_;
-        const fluidThermo& thermo_;
+        const fluid2TThermo& thermo_;
 
         // Viscous coefficients
         tmp< surfaceScalarField > muLam_;
@@ -91,7 +91,7 @@ class laplacian
             const volScalarField& rho,
             const volVectorField& rhoU,
             const volScalarField& rhoE,
-            const fluidThermo& thermo
+            const fluid2TThermo& thermo
         );
 
         virtual void addViscousJacobian(compressibleJacobianMatrix& jacobian);
