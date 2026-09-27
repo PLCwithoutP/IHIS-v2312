@@ -68,8 +68,8 @@ neTCLib and its interface layer (`TCLibraryBase`) are shared with nexaFoam and l
 | Phase | Content | Status |
 |---|---|---|
 | 1 | Turbulence removal; laminar regression against stock HiSA | ✔ complete |
-| 2 | Thermodynamic library swap (`fluidThermo` → neTCLib), 1T frozen N₂ | in progress |
-| 3 | Species and vibrational energy equations, finite-rate chemistry, 2T relaxation | planned |
+| 2 | Thermodynamic library swap (`fluidThermo` → neTCLib), 1T frozen N₂ | ✔ complete |
+| 3 | Species and vibrational energy equations, finite-rate chemistry, 2T relaxation | in progress |
 | 4 | Validation: 0-D heat bath → 1-D normal shock → blunted cone → Edney Type IV | planned |
 
 ---
