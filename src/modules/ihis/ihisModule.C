@@ -738,6 +738,62 @@ void ihisModule::outerIteration()
 
 }
 
+void ihisModule::updateEZero()
+{
+    const fvMesh& mesh = mesh_();
+    const ne2TReactionThermo& neThermo = pThermo_();
+
+    // Reference state (T -> 0 K); temporaries, not registered
+    const volScalarField TZero
+    (
+        IOobject
+        (
+            "TZero", mesh.time().timeName(), mesh,
+            IOobject::NO_READ, IOobject::NO_WRITE, IOobject::NO_REGISTER
+        ),
+        mesh,
+        dimensionedScalar("TZero", neThermo.TTR().dimensions(), SMALL)
+    );
+    const volScalarField pZero
+    (
+        IOobject
+        (
+            "pZero", mesh.time().timeName(), mesh,
+            IOobject::NO_READ, IOobject::NO_WRITE, IOobject::NO_REGISTER
+        ),
+        mesh,
+        dimensionedScalar("pZero", neThermo.p().dimensions(), SMALL)
+    );
+
+    eZero_() = neThermo.eTR(pZero, TZero) - neThermo.hc();
+
+    // T6.12: eZero must be finite everywhere (moved here from createFields.H)
+    {
+        bool finite = true;
+
+        for (const scalar v : eZero_().primitiveField())
+        {
+            if (!std::isfinite(v)) { finite = false; break; }
+        }
+        forAll(eZero_().boundaryField(), patchi)
+        {
+            for (const scalar v : eZero_().boundaryField()[patchi])
+            {
+                if (!std::isfinite(v)) { finite = false; break; }
+            }
+        }
+
+        if (!returnReduce(finite, andOp<bool>()))
+        {
+            FatalErrorInFunction
+                << "eZero is not finite. With twoTemperature false, the species"
+                << " Cp coefficients must stay finite at T = SMALL"
+                << " (raw NASA-9 a0/T^2 and a1*ln(T) terms diverge)."
+                << exit(FatalError);
+        }
+    }
+}
+
 void ihisModule::findDebugCell()
 {
     // Code adapted from findRefCell.C

@@ -39,8 +39,10 @@ License
 
     U.ref() = rhoU.internalField()/rho.internalField();
 
+    updateEZero();
+    
     e.ref() = rhoE.internalField()/rho.internalField()
-              - 0.5*magSqr(U.internalField()) + eZero_->internalField();
+              - 0.5*magSqr(U.internalField()) - eVibMix_->internalField() + eZero_->internalField();
 
     // Temperature bound
     dimensionedScalar TMin
@@ -134,7 +136,7 @@ License
     rhoE.ref() =
         rho.internalField()*
         (
-            e.internalField() - eZero_() + 0.5*magSqr(U.internalField())
+            e.internalField() - eZero_() + eVibMix_->internalField() + 0.5*magSqr(U.internalField())
         );
 
     // Correct boundary fields
@@ -178,5 +180,6 @@ License
         (
             e.boundaryField()
           - eZero_->boundaryField()
+          + eVibMix_->boundaryField()
           + 0.5*magSqr(U.boundaryField())
         );

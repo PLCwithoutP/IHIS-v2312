@@ -1,1 +1,0 @@
-../massDiffusionModel/FickDM/FickDM.C

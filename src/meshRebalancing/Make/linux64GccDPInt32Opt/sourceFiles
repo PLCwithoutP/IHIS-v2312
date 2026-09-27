@@ -1,4 +1,0 @@
-SOURCE = \
-dynamicRefineRebalanceFvMesh/dynamicRefineRebalanceFvMesh.C \
-
-# sources

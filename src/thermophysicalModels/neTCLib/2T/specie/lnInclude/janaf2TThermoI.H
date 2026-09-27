@@ -1,1 +1,0 @@
-../thermo/janaf2T/janaf2TThermoI.H

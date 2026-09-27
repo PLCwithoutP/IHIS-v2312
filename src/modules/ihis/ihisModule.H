@@ -187,6 +187,10 @@ protected:
         //- Search for debug point specified in controlDict
         void findDebugCell();
 
+        //- Recompute eZero_ = eTR(pZero, TZero) - hc(); aborts if non-finite.
+        //  Called at initialisation and before every decode (energy-neutral chemistry in Phase 3).
+        void updateEZero();
+
 public:
 
     //- Runtime type information
