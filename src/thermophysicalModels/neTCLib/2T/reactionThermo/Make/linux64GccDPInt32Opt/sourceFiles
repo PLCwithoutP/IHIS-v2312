@@ -1,0 +1,8 @@
+SOURCE = \
+neChemistryReaders/neChemistryReader/makeNeChemistryReaders.C \
+mixtures/basicMultiComponent2TMixture/basicMultiComponent2TMixture.C \
+mixtures/basicSpecie2TMixture/basicSpecie2TMixture.C \
+ne2TReactionThermo/ne2TReactionThermo.C \
+ne2TReactionThermo/ne2TReactionThermos.C \
+
+# sources

@@ -1,3 +1,16 @@
+# ---------------------------------------------------------------
+# IHIS build definitions, included by every IHIS Make/options.
+#
+# IHIS_ROOT must be computed before any other include: at this point
+# the last entry of MAKEFILE_LIST is this file itself. ':=' evaluates
+# it immediately (with '=', it would be evaluated later, after
+# MAKEFILE_LIST has grown).
+# If this file lives in src/ instead of the repository root, drop
+# '/src' from NETC_DIR.
+# ---------------------------------------------------------------
+IHIS_ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
+NETC_DIR  := $(IHIS_ROOT)/src/thermophysicalModels
+
 MAJ_VER := $(WM_PROJECT_VERSION:v%=%)
 MAJ_VER := $(subst ., ,$(MAJ_VER))
 MAJ_VER := $(word 1,$(MAJ_VER))
@@ -6,6 +19,7 @@ ifeq ($(shell expr $(MAJ_VER) \< 2312), 1)
     $(warning IHIS targets OpenFOAM-v2312 (ESI). Other versions are untested.)
 endif
 
+# OpenFOAM thermo (kept until the T3 type swap is complete)
 THERMO_INC  = -I$(LIB_SRC)/transportModels/compressible/lnInclude
 THERMO_LIBS = -lfluidThermophysicalModels -lcompressibleTransportModels
 
@@ -13,3 +27,45 @@ FV_OPTIONS_LIB = -lfvOptions
 
 DYN_MESH_INCLUDE = -I$(LIB_SRC)/dynamicFvMesh/lnInclude
 DYN_MESH_LIB = -ldynamicFvMesh -ltopoChangerFvMesh
+
+# ---------------------------------------------------------------
+# Mutation++ (opt-in). Set in .bashrc:
+#   export WITH_MUTATION_PP=1, plus MPP_LIB (and the others checked by Allwmake).
+# Every library that includes TCLibraryBase headers must see the same
+# -DWITH_MUTATION_PP setting, otherwise the class layouts differ (ODR).
+# ---------------------------------------------------------------
+ifdef WITH_MUTATION_PP
+    MPP_DEFINE    = -DWITH_MUTATION_PP
+    MPP_LINK      = -L$(MPP_LIB) -lmutation++ -Wl,-rpath,$(MPP_LIB)
+    MPP_USER_LIBS = -lmutationppInterface
+else
+    MPP_DEFINE    =
+    MPP_LINK      =
+    MPP_USER_LIBS =
+endif
+
+# ---------------------------------------------------------------
+# neTCLib: fluid2TThermo level (what src/finiteVolume may see)
+# ---------------------------------------------------------------
+NETC_INC = $(MPP_DEFINE) \
+    -I$(NETC_DIR)/neTCLib/2T/basic/lnInclude \
+    -I$(NETC_DIR)/neTCLib/2T/specie/lnInclude \
+    -I$(NETC_DIR)/TCLibraryBase/lnInclude \
+    -I$(LIB_SRC)/thermophysicalModels/thermophysicalProperties/lnInclude
+
+NETC_LIBS = -L$(FOAM_USER_LIBBIN) \
+    -lneTCLib_2T \
+    -lneTCspecie_2T \
+    -lTCLibraryBase
+
+# ---------------------------------------------------------------
+# neTCLib: ne2TReactionThermo level (the owning module only)
+# ---------------------------------------------------------------
+NETC_REACTION_INC = \
+    -I$(NETC_DIR)/neTCLib/2T/reactionThermo/lnInclude
+
+NETC_REACTION_LIBS = \
+    $(MPP_LINK) \
+    $(MPP_USER_LIBS) \
+    -lneReactionThermophysicalModels \
+    -lneTCChemistryModel

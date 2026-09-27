@@ -27,14 +27,11 @@ printf '%*s\n' "$(tput cols)" '' | tr ' ' 'x'
 dash_line " ihis/src Compilation is started "
 printf '%*s\n' "$(tput cols)" '' | tr ' ' 'x'
 cd src && { ./Allwmake; cd ..; }
-echo " "
-echo " "
-echo " "
-echo " "
-printf '%*s\n' "$(tput cols)" '' | tr ' ' 'x'
 dash_line " ihis/applications Compilation is started "
-printf '%*s\n' "$(tput cols)" '' | tr ' ' 'x'
+printf '%*s\n' "$(tput cols)" '' | tr ' ' '#'
 cd applications && { ./Allwmake; cd ..; }
+printf '%*s\n' "$(tput cols)" '' | tr ' ' 'x'
 dash_line " Full Repository is Compiled. "
+printf '%*s\n' "$(tput cols)" '' | tr ' ' 'x'
 echo " "
 echo " "
