@@ -64,7 +64,7 @@ class ausmPlusUpFluxScheme
 protected:
     // Protected data
         const fvMesh& mesh_;
-        const fluidThermo& thermo_;
+        const fluid2TThermo& thermo_;
         const volScalarField& rho_;
         const volVectorField& U_;
         const volVectorField& rhoU_;
@@ -82,7 +82,7 @@ public:
         ausmPlusUpFluxScheme
         (
             const dictionary& dict,
-            const fluidThermo& thermo,
+            const fluid2TThermo& thermo,
             const volScalarField& rho,
             const volVectorField& U,
             const volVectorField& rhoU,

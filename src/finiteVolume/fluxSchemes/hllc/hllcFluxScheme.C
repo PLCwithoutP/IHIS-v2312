@@ -51,7 +51,7 @@ addToRunTimeSelectionTable(fluxScheme, hllcFluxScheme, dictionary);
 hllcFluxScheme::hllcFluxScheme
 (
     const dictionary& dict,
-    const fluidThermo& thermo,
+    const fluid2TThermo& thermo,
     const volScalarField& rho,
     const volVectorField& U,
     const volVectorField& rhoU,
