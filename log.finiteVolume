@@ -1,0 +1,43 @@
+wmake libso src/finiteVolume
+Making dependencies: characteristicFarfieldVelocityFvPatchVectorField.C
+Making dependencies: characteristicFarfieldPressureFvPatchScalarField.C
+Making dependencies: characteristicFarfieldTemperatureFvPatchScalarField.C
+Making dependencies: characteristicVelocityInletOutletVelocityFvPatchVectorField.C
+Making dependencies: characteristicVelocityInletOutletPressureFvPatchScalarField.C
+Making dependencies: characteristicVelocityInletOutletTemperatureFvPatchScalarField.C
+Making dependencies: characteristicPressureInletOutletVelocityFvPatchVectorField.C
+Making dependencies: characteristicPressureInletOutletPressureFvPatchScalarField.C
+Making dependencies: characteristicPressureInletOutletTemperatureFvPatchScalarField.C
+Making dependencies: characteristicWallPressureFvPatchScalarField.C
+Making dependencies: characteristicWallTemperatureFvPatchScalarField.C
+Making dependencies: coupledSymmetryFvPatchVectorField.C
+Making dependencies: coupledSymmetryPlaneFvPatchVectorField.C
+Making dependencies: coupledWedgeFvPatchVectorField.C
+Making dependencies: fluxScheme.C
+Making dependencies: newFluxScheme.C
+Making dependencies: ausmPlusUpFluxScheme.C
+Making dependencies: hllcFluxScheme.C
+Making dependencies: laxFriedrichsFluxScheme.C
+Making dependencies: jacobianInviscid.C
+Making dependencies: newJacobianInviscid.C
+Making dependencies: laxFriedrichs.C
+Making dependencies: discreteLaxFriedrichs.C
+Making dependencies: centralLaxFriedrichs.C
+Making dependencies: jacobianViscous.C
+Making dependencies: newJacobianViscous.C
+Making dependencies: laplacian.C
+Making dependencies: spectralRadius.C
+Making dependencies: jacobian.C
+g++ -std=c++14 -m64 -pthread -DOPENFOAM=2312 -DWM_DP -DWM_LABEL_SIZE=32 -Wall -Wextra -Wold-style-cast -Wnon-virtual-dtor -Wno-unused-parameter -Wno-invalid-offsetof -Wno-attributes -Wno-unknown-pragmas -O3  -DNoRepository -ftemplate-depth-100  -g  -I./lnInclude -I./fvjMatrix -I/home/administrator/OF2312/OpenFOAM-v2312/src/finiteVolume/lnInclude -I/home/administrator/OF2312/OpenFOAM-v2312/src/thermophysicalModels/basic/lnInclude -I/home/administrator/OF2312/OpenFOAM-v2312/src/thermophysicalModels/specie/lnInclude -I/home/administrator/OF2312/OpenFOAM-v2312/src/transportModels/compressible/lnInclude  -I/home/administrator/Desktop/codeProjects/masterThesisCode/IHIS-v2312/src/thermophysicalModels/neTCLib/2T/basic/lnInclude -I/home/administrator/Desktop/codeProjects/masterThesisCode/IHIS-v2312/src/thermophysicalModels/neTCLib/2T/specie/lnInclude -I/home/administrator/Desktop/codeProjects/masterThesisCode/IHIS-v2312/src/thermophysicalModels/TCLibraryBase/lnInclude -I/home/administrator/OF2312/OpenFOAM-v2312/src/thermophysicalModels/thermophysicalProperties/lnInclude -I/home/administrator/OF2312/OpenFOAM-v2312/src/dynamicMesh/lnInclude -I/home/administrator/OF2312/OpenFOAM-v2312/src/meshTools/lnInclude -iquote. -IlnInclude -I/home/administrator/OF2312/OpenFOAM-v2312/src/OpenFOAM/lnInclude -I/home/administrator/OF2312/OpenFOAM-v2312/src/OSspecific/POSIX/lnInclude   -fPIC -c boundaryConditions/characteristic/characteristicFarfield/characteristicFarfieldVelocityFvPatchVectorField.C -o Make/linux64GccDPInt32Opt/boundaryConditions/characteristic/characteristicFarfield/characteristicFarfieldVelocityFvPatchVectorField.o
+boundaryConditions/characteristic/characteristicFarfield/characteristicFarfieldVelocityFvPatchVectorField.C: In member function ‘virtual void Foam::characteristicFarfieldVelocityFvPatchVectorField::updateCoeffs()’:
+boundaryConditions/characteristic/characteristicFarfield/characteristicFarfieldVelocityFvPatchVectorField.C:169:11: error: ‘fluidThermo’ does not name a type; did you mean ‘fluid2TThermo_H’?
+  169 |     const fluidThermo& thermo =
+      |           ^~~~~~~~~~~
+      |           fluid2TThermo_H
+boundaryConditions/characteristic/characteristicFarfield/characteristicFarfieldVelocityFvPatchVectorField.C:172:35: error: ‘thermo’ was not declared in this scope
+  172 |     tmp< volScalarField > gamma = thermo.gamma();
+      |                                   ^~~~~~
+boundaryConditions/characteristic/characteristicFarfield/characteristicFarfieldVelocityFvPatchVectorField.C:168:19: warning: unused variable ‘mesh’ [-Wunused-variable]
+  168 |     const fvMesh& mesh = patch().boundaryMesh().mesh();
+      |                   ^~~~
+make: *** [/home/administrator/OF2312/OpenFOAM-v2312/wmake/rules/General/transform:38: Make/linux64GccDPInt32Opt/boundaryConditions/characteristic/characteristicFarfield/characteristicFarfieldVelocityFvPatchVectorField.o] Error 1

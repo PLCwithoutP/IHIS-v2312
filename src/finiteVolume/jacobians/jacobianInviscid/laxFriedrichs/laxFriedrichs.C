@@ -148,8 +148,8 @@ void laxFriedrichs::boundaryJacobian
     const volScalarField& rhoE(rhoE_);
     const volScalarField& p(thermo_.p());
     const volVectorField& U(mesh.lookupObject<volVectorField>("U"));
-    const volScalarField& T(thermo_.T());
-    tmp< volScalarField > tcv = thermo_.Cv();
+    const volScalarField& T(thermo_.TTR());
+    tmp< volScalarField > tcv = thermo_.CvTR();
     const volScalarField& cv = tcv();
     tmp< volScalarField > tgamma(thermo_.gamma());
     const volScalarField& gamma = tgamma();

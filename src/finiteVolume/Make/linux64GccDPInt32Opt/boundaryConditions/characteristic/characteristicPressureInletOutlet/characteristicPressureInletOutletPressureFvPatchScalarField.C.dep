@@ -605,10 +605,15 @@ $(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/calculatedFvsPatchField.C \
 $(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/fvsPatchFieldMacros.H \
 $(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/fvsPatchFieldsFwd.H \
 $(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/calculatedFvsPatchFields.H \
-$(WM_PROJECT_DIR)/src/thermophysicalModels/basic/lnInclude/fluidThermo.H \
-$(WM_PROJECT_DIR)/src/thermophysicalModels/basic/lnInclude/basicThermo.H \
+/home/administrator/Desktop/codeProjects/masterThesisCode/IHIS-v2312/src/thermophysicalModels/neTCLib/2T/basic/lnInclude/fluid2TThermo.H \
+/home/administrator/Desktop/codeProjects/masterThesisCode/IHIS-v2312/src/thermophysicalModels/neTCLib/2T/basic/lnInclude/basic2TThermo.H \
 $(WM_PROJECT_DIR)/src/OpenFOAM/lnInclude/wordIOList.H \
-$(WM_PROJECT_DIR)/src/thermophysicalModels/basic/lnInclude/basicThermoTemplates.C \
+/home/administrator/Desktop/codeProjects/masterThesisCode/IHIS-v2312/src/thermophysicalModels/TCLibraryBase/lnInclude/tcLibraryInterface.H \
+/home/administrator/Desktop/codeProjects/masterThesisCode/IHIS-v2312/src/thermophysicalModels/TCLibraryBase/lnInclude/compositionInterface.H \
+$(WM_PROJECT_DIR)/src/thermophysicalModels/specie/lnInclude/speciesTable.H \
+$(WM_PROJECT_DIR)/src/OpenFOAM/lnInclude/hashedWordList.H \
+$(WM_PROJECT_DIR)/src/OpenFOAM/lnInclude/hashedWordListI.H \
+/home/administrator/Desktop/codeProjects/masterThesisCode/IHIS-v2312/src/thermophysicalModels/neTCLib/2T/basic/lnInclude/basic2TThermoTemplates.C \
 $(WM_PROJECT_DIR)/src/transportModels/compressible/lnInclude/compressibleTransportModel.H \
 
 #END

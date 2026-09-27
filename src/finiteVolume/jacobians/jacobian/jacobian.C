@@ -54,7 +54,7 @@ void jacobian::addBoundaryTerms()
     // Update boundary coeffs as in fvMatrix construction
     volScalarField& p(const_cast<volScalarField&>(thermo_.p()));
     volVectorField& U(const_cast<volVectorField&>(U_));
-    volScalarField& T(const_cast<volScalarField&>(thermo_.T()));
+    volScalarField& T(const_cast<volScalarField&>(thermo_.TTR()));
     label currentState;
     currentState = p.eventNo();
     p.boundaryFieldRef().updateCoeffs();

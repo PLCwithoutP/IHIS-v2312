@@ -101,8 +101,8 @@ void laplacian::boundaryJacobian
     const volScalarField& rhoE(rhoE_);
     const volScalarField& p(thermo_.p());
     const volVectorField& U(mesh.lookupObject<volVectorField>("U"));
-    const volScalarField& T(thermo_.T());
-    tmp< volScalarField > tcv = thermo_.Cv();
+    const volScalarField& T(thermo_.TTR());
+    tmp< volScalarField > tcv = thermo_.CvTR();
     const volScalarField& cv = tcv();
     tmp< volScalarField > tgamma(thermo_.gamma());
     const volScalarField& gamma = tgamma();
@@ -111,7 +111,7 @@ void laplacian::boundaryJacobian
     const volScalarField::Boundary& tbf = T.boundaryField();
 
     const scalarField gammaB = thermo_.gamma()->boundaryField()[patchi];
-    const scalarField cvB = thermo_.Cv()().boundaryField()[patchi];
+    const scalarField cvB = thermo_.CvTR()().boundaryField()[patchi];
 
 
     const scalarField& magSfB = mesh_.magSf().boundaryField()[patchi];
