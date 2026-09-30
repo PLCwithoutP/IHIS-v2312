@@ -163,6 +163,8 @@ public:
         virtual scalar wilkeKappaAverage() const override;
         virtual scalar wilkeMuAverage() const;
         virtual Foam::volScalarField fickDiffusionCoeff() const;
+        virtual tmp<volScalarField> kappaTRWilke() const override;
+        virtual tmp<scalarField> kappaTRWilke(const label patchi) const override;
 };
 
 

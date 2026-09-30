@@ -475,6 +475,103 @@ Foam::heNe2TReactionThermo<BasicNe2TThermo, MixtureType>::fickDiffusionCoeff() c
     return Deff;
 }
 
+template<class BasicNe2TThermo, class MixtureType>
+Foam::tmp<Foam::volScalarField>
+Foam::heNe2TReactionThermo<BasicNe2TThermo, MixtureType>::kappaTRWilke() const
+{
+    using mixingMixtureType = const typename MixtureType::basicSpecie2TMixture;
+    mixingMixtureType& mixingComp = this->composition();
+
+    // Ns <= 1: exactly kappaTR() (Phase 2 containment, Checkpoint A)
+    if (mixingComp.Y().size() <= 1)
+    {
+        return this->kappaTR();
+    }
+
+    const fvMesh& mesh = this->TTR_.mesh();
+
+    tmp<volScalarField> tkappa
+    (
+        new volScalarField
+        (
+            IOobject
+            (
+                "kappaTRWilke",
+                mesh.time().timeName(),
+                mesh,
+                IOobject::NO_READ,
+                IOobject::NO_WRITE,
+                IOobject::NO_REGISTER
+            ),
+            mesh,
+            dimensionedScalar("zero", dimPower/dimLength/dimTemperature, 0.0)
+        )
+    );
+    volScalarField& kappa = tkappa.ref();
+
+    WilkeMR<mixingMixtureType> wilkeMix(mixingComp);
+
+    const scalarField& pCells   = this->p_.primitiveField();
+    const scalarField& TTRCells = this->TTR_.primitiveField();
+    scalarField& kappaCells     = kappa.primitiveFieldRef();
+
+    forAll(kappaCells, celli)
+    {
+        kappaCells[celli] =
+            wilkeMix.kappaTRCell(celli, pCells[celli], TTRCells[celli]);
+    }
+
+    // Coupled (processor) patches: exchange neighbour-cell values
+    kappa.correctBoundaryConditions();
+
+    // Physical patches: face-cell composition, face p and TTR
+    volScalarField::Boundary& kappaBf = kappa.boundaryFieldRef();
+    forAll(kappaBf, patchi)
+    {
+        if (!kappaBf[patchi].coupled())
+        {
+            kappaBf[patchi] = this->kappaTRWilke(patchi);
+        }
+    }
+
+    return tkappa;
+}
+
+template<class BasicNe2TThermo, class MixtureType>
+Foam::tmp<Foam::scalarField>
+Foam::heNe2TReactionThermo<BasicNe2TThermo, MixtureType>::kappaTRWilke
+(
+    const label patchi
+) const
+{
+    using mixingMixtureType = const typename MixtureType::basicSpecie2TMixture;
+    mixingMixtureType& mixingComp = this->composition();
+
+    // Ns <= 1: exactly kappaTR(patchi)
+    if (mixingComp.Y().size() <= 1)
+    {
+        return this->kappaTR(patchi);
+    }
+
+    const fvPatch& patch = this->TTR_.mesh().boundary()[patchi];
+    const labelUList& faceCells = patch.faceCells();
+
+    const scalarField& pPatch   = this->p_.boundaryField()[patchi];
+    const scalarField& TTRPatch = this->TTR_.boundaryField()[patchi];
+
+    tmp<scalarField> tK(new scalarField(patch.size()));
+    scalarField& K = tK.ref();
+
+    WilkeMR<mixingMixtureType> wilkeMix(mixingComp);
+
+    forAll(K, facei)
+    {
+        K[facei] =
+            wilkeMix.kappaTRCell(faceCells[facei], pPatch[facei], TTRPatch[facei]);
+    }
+
+    return tK;
+}
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 

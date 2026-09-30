@@ -914,5 +914,15 @@ bool Foam::basic2TThermo::read()
     return regIOobject::read();
 }
 
+Foam::tmp<Foam::volScalarField> Foam::basic2TThermo::kappaTRWilke() const
+{
+    return kappaTR();
+}
+
+Foam::tmp<Foam::scalarField>
+Foam::basic2TThermo::kappaTRWilke(const label patchi) const
+{
+    return kappaTR(patchi);
+}
 
 // ************************************************************************* //

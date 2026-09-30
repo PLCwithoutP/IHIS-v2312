@@ -877,6 +877,13 @@ public:
                 const label patchi
             ) const = 0;
 
+            //- TR thermal conductivity of mixture, Wilke mixing rule [J/m/s/K]
+            //  Default: kappaTR(). Overridden where a mixing rule exists.
+            virtual tmp<volScalarField> kappaTRWilke() const;
+
+            //- As above, for patch [J/m/s/K]
+            virtual tmp<scalarField> kappaTRWilke(const label patchi) const;
+
             //- Vibrational thermal diffusivity for temperature of mixture [J/m/s/K]
             virtual tmp<volScalarField> kappaVib() const = 0;
 
