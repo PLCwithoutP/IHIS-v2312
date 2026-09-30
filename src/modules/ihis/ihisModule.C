@@ -32,6 +32,7 @@ License
 #include "ihisSolver.H"
 #include "fvcSmooth.H"
 #include "jacobian.H"
+#include "discreteLaxFriedrichs.H"
 #include "characteristicWallPressureFvPatchScalarField.H"
 #include "dynamicFvMesh.H"
 #include "fvcLaplacian.H"
@@ -255,6 +256,47 @@ void ihisModule::initialise()
     }
 
     #include "createFields.H"
+
+    // IHIS: discreteLaxFriedrichs assumes a zero energy datum and
+    // is not mixture-ready. LHS only: affects convergence, not the answer.
+    // Walks the same dictionaries as the main Jacobian (flowSolver/<solver>)
+    // and createPreconditioners (preconditioner chain).
+    if (neThermo.composition().Y().size() > 1)
+    {
+        const dictionary& flowDict = mesh.solutionDict().subDict("flowSolver");
+        const word solverType(flowDict.get<word>("solver"));
+        const dictionary solverDict(flowDict.subOrEmptyDict(solverType));
+
+        const dictionary* dPtr = &solverDict;
+        while (dPtr)
+        {
+            const dictionary& d = *dPtr;
+
+            if
+            (
+                d.getOrDefault<word>("inviscidJacobian", word::null)
+             == discreteLaxFriedrichs::typeName
+            )
+            {
+                WarningInFunction
+                    << "inviscidJacobian " << discreteLaxFriedrichs::typeName
+                    << " in " << d.name()
+                    << " assumes a zero energy datum and is not mixture-ready ("
+                    << neThermo.composition().Y().size() << " species)." << nl
+                    << "    Use laxFriedrichs or centralLaxFriedrichs." << endl;
+            }
+
+            dPtr = nullptr;
+            if (d.found("preconditioner"))
+            {
+                const word pName(d.get<word>("preconditioner"));
+                if (d.isDict(pName))
+                {
+                    dPtr = &d.subDict(pName);
+                }
+            }
+        }
+    }
 
     // User config check
     #include "config.H"
@@ -588,19 +630,24 @@ void ihisModule::outerIteration()
             localTimesteppingLowerBound_*scalarVarsPrevIter_[0]
         );
         volScalarField rhoMax(localTimesteppingUpperBound_*scalarVarsPrevIter_[0]);
-        volScalarField eMin
+        // IHIS: datum-free bounding. Relative bounds and the
+        // positivity check act on the thermal (pressure-producing) energy
+        // eTh = p/((gamma-1)*rho). eOff = e - eTh (formation energy; later e_v)
+        // is frozen across the solve: Y is unchanged until speciesEqns.H, and
+        // neThermo still holds the previous-iteration p and gamma here.
+        const volScalarField eThPrev
         (
-            localTimesteppingLowerBound_*
-            (scalarVarsPrevIter_[1]/scalarVarsPrevIter_[0]
-            - 0.5*magSqr(vectorVarsPrevIter_[0]/scalarVarsPrevIter_[0]))
+            neThermo.p()/((neThermo.gamma() - 1.0)*scalarVarsPrevIter_[0])
         );
-        volScalarField eMax
+        const volScalarField eOff
         (
-            localTimesteppingUpperBound_*
-            (scalarVarsPrevIter_[1]/scalarVarsPrevIter_[0]
-            - 0.5*magSqr(vectorVarsPrevIter_[0]/scalarVarsPrevIter_[0]))
+            scalarVarsPrevIter_[1]/scalarVarsPrevIter_[0]
+          - 0.5*magSqr(vectorVarsPrevIter_[0]/scalarVarsPrevIter_[0])
+          - eThPrev
         );
-        volScalarField eTemp(rhoE/rho - 0.5*magSqr(rhoU/rho));
+        volScalarField eMin(localTimesteppingLowerBound_*eThPrev);
+        volScalarField eMax(localTimesteppingUpperBound_*eThPrev);
+        volScalarField eTemp(rhoE/rho - 0.5*magSqr(rhoU/rho) - eOff);
 
         volScalarField factor
         (
@@ -721,7 +768,7 @@ void ihisModule::outerIteration()
         rho = min(rho, rhoMax);
         eTemp = max(eTemp, eMin);
         eTemp = min(eTemp, eMax);
-        rhoE = rho*(eTemp + 0.5*magSqr(rhoU/rho));
+        rhoE = rho*(eTemp + eOff + 0.5*magSqr(rhoU/rho));
 
         pseudoCoDamping_() *= factor;
         pseudoCoDamping_() = min(scalar(1), pseudoCoDamping_());

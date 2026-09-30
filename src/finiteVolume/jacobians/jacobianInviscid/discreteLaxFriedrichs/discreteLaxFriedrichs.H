@@ -31,7 +31,13 @@ Description
 
 Note
     Causes problems for LUSGS preconditioner - use separate centralLaxFriedrichs
-    scheme.
+    scheme. 
+    NOTE (IHIS): not mixture-ready. The energy row is built from
+    aStar*rhoE - rho*theta and ef = rhoE/rho - 0.5|U|^2, which assume a zero
+    energy datum (p = (gamma-1)*rho*e). With formation energy (Ns > 1) or
+    vibrational energy inside rhoE, dp/drho can have the wrong sign. Use
+    laxFriedrichs or centralLaxFriedrichs for mixtures. This affects the
+    left-hand side only (convergence, not the converged solution).
 
 Authors
     Oliver Oxtoby

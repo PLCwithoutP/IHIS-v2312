@@ -114,15 +114,22 @@ void Foam::ausmPlusUpFluxScheme::calcFlux(surfaceScalarField& phi, surfaceVector
     );
     H->rename("H");
 
-    tmp< volScalarField > Hrel(H.ref());
+    //   c*^2 = 2/(gamma+1)*(gamma/psi + 0.5*(gamma-1)*|Urel|^2)
+    // Equals 2(gamma-1)/(gamma+1)*Hrel for a zero-datum gas, but is
+    // independent of formation energy (and later e_v) carried in rhoE/H.
+    tmp<volScalarField> magSqrUrel(magSqr(U_));
     if (mesh_.moving())
     {
-        Hrel = H() - 0.5*(U_&U_);
-        volVectorField Urel(U_ - fvc::reconstruct(fvc::meshPhi(U_)));
-        Hrel.ref() += 0.5*(Urel&Urel);
+        magSqrUrel = magSqr(U_ - fvc::reconstruct(fvc::meshPhi(U_)));
     }
 
-    tmp< volScalarField > c = sqrt(2.0*(gamma()-1.0)/(gamma()+1.0)*Hrel());
+    tmp<volScalarField> c = sqrt
+    (
+        2.0/(gamma() + 1.0)
+       *(gamma()/thermo_.psi() + 0.5*(gamma() - 1.0)*magSqrUrel())
+    );
+    magSqrUrel.clear();
+
     c->rename("c");
     gamma.clear();
 
@@ -131,7 +138,7 @@ void Foam::ausmPlusUpFluxScheme::calcFlux(surfaceScalarField& phi, surfaceVector
     dimensionedScalar smallVelocity("small", dimVelocity, SMALL);
     c_L = sqr(c_L())/stabilise(max(c_L(), un_L), smallVelocity);
     c_R = sqr(c_R())/stabilise(max(c_R(),-un_R), smallVelocity);
-    tmp< surfaceScalarField > c_face(stabilise(min(c_L(),c_R()), smallVelocity));
+    tmp<surfaceScalarField> c_face(stabilise(min(c_L(),c_R()), smallVelocity));
     c_L.clear();
     c_R.clear();
 

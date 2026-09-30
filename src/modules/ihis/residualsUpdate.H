@@ -53,7 +53,7 @@ License
     {
         // Laminar transport properties (no turbulence model in IHIS)
         volScalarField muLam("muLam", neThermo.mu());
-        volScalarField alphaLam("alphaLam", neThermo.kappaTR()/neThermo.CvTR());
+        volScalarField alphaLam("alphaLam", neThermo.kappaTRWilke()/neThermo.CvTR());
 
         volTensorField& tauMC = tauMC_();
         tauMC = muLam*dev2(Foam::T(fvc::grad(U)));

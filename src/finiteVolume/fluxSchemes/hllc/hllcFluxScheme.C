@@ -146,6 +146,14 @@ void Foam::hllcFluxScheme::calcFlux(surfaceScalarField& phi, surfaceVectorField&
     tmp< volScalarField > c = max(sqrt(gamma()/psi()),c0);
     tmp< surfaceScalarField > c_l = fvc::interpolate(c(), pos_, "reconstruct(T)");
     tmp< surfaceScalarField > c_r = fvc::interpolate(c(), neg_, "reconstruct(T)");
+    
+    //   Heff = c^2/(gamma-1) + 0.5*|U|^2,  c^2 = gamma/psi
+    // The true H (carrying formation energy) stays for the energy flux phiEp.
+    tmp<volScalarField> Heff(sqr(c())/(gamma() - 1.0) + 0.5*magSqr(U_));
+    tmp<surfaceScalarField> Heff_l(fvc::interpolate(Heff(), pos_, "reconstruct(T)"));
+    tmp<surfaceScalarField> Heff_r(fvc::interpolate(Heff(), neg_, "reconstruct(T)"));
+    Heff.clear();
+
     c.clear();
     psi.clear();
 
@@ -155,8 +163,8 @@ void Foam::hllcFluxScheme::calcFlux(surfaceScalarField& phi, surfaceVectorField&
 
     // NOTE: Literature suggest enthalpy should be interpolated seperately and
     // not be assembled using left and right states of energy and pressure
-//    tmp< surfaceScalarField > H_l (E_l() + p_l()/rho_l());
-//    tmp< surfaceScalarField > H_r (E_r() + p_r()/rho_r());
+    //    tmp< surfaceScalarField > H_l (E_l() + p_l()/rho_l());
+    //    tmp< surfaceScalarField > H_r (E_r() + p_r()/rho_r());
     tmp<volScalarField > H (E()+ p()/rho_);
     tmp<surfaceScalarField > H_l (fvc::interpolate(H(), pos_, "reconstruct(T)"));
     tmp<surfaceScalarField > H_r (fvc::interpolate(H(), neg_, "reconstruct(T)"));
@@ -167,10 +175,14 @@ void Foam::hllcFluxScheme::calcFlux(surfaceScalarField& phi, surfaceVectorField&
     dimensionedScalar rho0("rho0",dimDensity,VSMALL);
     tmp< surfaceScalarField > coefR = sqrt(max(rho0,rho_r())/max(rho0,rho_l()));  // CHECK: Is this form of coefR correct?
     tmp< surfaceVectorField > uAvg = (coefR()*U_r + U_l)/(coefR() + 1.0);
-    tmp< surfaceScalarField > HAvg = (coefR()*H_r() + H_l())/(coefR() + 1.0);
-    tmp< surfaceScalarField > cAvg = sqrt((fvc::interpolate(gamma())-1.0)*(HAvg() - 0.5*magSqr(uAvg())));
+    
+    tmp< surfaceScalarField > HeffAvg = (coefR()*Heff_r() + Heff_l())/(coefR() + 1.0);
+    Heff_l.clear();
+    Heff_r.clear();
+    tmp< surfaceScalarField > cAvg = sqrt((fvc::interpolate(gamma())-1.0)*(HeffAvg() - 0.5*magSqr(uAvg())));
+    
     gamma.clear();
-    HAvg.clear();
+    HeffAvg.clear();
     coefR.clear();
 
     // Contravariant velocity

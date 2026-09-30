@@ -85,6 +85,11 @@ void centralLaxFriedrichs::addFluxTerms(compressibleJacobianMatrix& jacobian)
     tmp<volTensorField> UU = U*U;
     tmp<volScalarField> gammaE = gamma*rhoE/rho;
 
+    // Non-pressure-producing energy (formation energy; later e_v),
+    // p = aStar*rho*(E - 0.5|U|^2 - eOff)
+    tmp<volScalarField> eOff =
+        rhoE/rho - 0.5*(U&U) - thermo_.p()/(aStar()*rho);
+
     fvjMatrix<scalar>& dContByRho = jacobian.dSByS(0,0);
     fvjMatrix<vector>& dContByRhoU = jacobian.dSByV(0,0);
     //fvjMatrix<scalar>& dContByRhoE = jacobian.dSByS(0,1);
@@ -98,12 +103,12 @@ void centralLaxFriedrichs::addFluxTerms(compressibleJacobianMatrix& jacobian)
     // Diagonal and off-diagonal contribution of convective part
     dContByRhoU += fvj::grad(w, geometricOneField());
 
-    dMomByRho += fvj::div(w, -UU()) + fvj::grad(w, theta());
+    dMomByRho += fvj::div(w, -UU()) + fvj::grad(w, theta() - aStar()*eOff());
     dMomByRhoU += fvj::div(w, U)*tensor::I + fvj::grad(w, U) + fvj::gradT(w, -aStar()*U);
     dMomByRhoE += fvj::grad(w, aStar());
 
     dEnergyByRho += fvj::div(w, -gammaE()*U+2*theta()*U);
-    dEnergyByRhoU += fvj::grad(w, gammaE-theta) + fvj::div(w, -aStar*UU);
+    dEnergyByRhoU += fvj::grad(w, gammaE - theta - aStar()*eOff()) + fvj::div(w, -aStar*UU);
     dEnergyByRhoE += fvj::div(w, gamma*U);
 
     // Moving mesh part

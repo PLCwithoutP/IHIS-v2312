@@ -176,7 +176,11 @@ void laplacian::boundaryJacobian
     scalarField gammaI(gamma.boundaryField()[patchi].patchInternalField());
     scalarField cvI(cv.boundaryField()[patchi].patchInternalField());
 
-    scalarField dPdRho(0.5*(gammaI-1)*magSqr(UI));
+    // non-pressure-producing energy of patch-internal cells
+    scalarField pI(thermo_.p().boundaryField()[patchi].patchInternalField());
+    scalarField eOffI(rhoEI/rhoI - 0.5*magSqr(UI) - pI/((gammaI - 1)*rhoI));
+
+    scalarField dPdRho((gammaI - 1)*(0.5*magSqr(UI) - eOffI));
     vectorField dUdRho
 (
     -UI/rhoI
@@ -211,7 +215,7 @@ void laplacian::addViscousJacobian(compressibleJacobianMatrix& jacobian)
 {
 
     muLam_    = fvc::interpolate(thermo_.mu());
-    alphaLam_ = fvc::interpolate(thermo_.kappaTR()/thermo_.CvTR());
+    alphaLam_ = fvc::interpolate(thermo_.kappaTRWilke()/thermo_.CvTR());
 
     addFluxTerms(jacobian);
 }

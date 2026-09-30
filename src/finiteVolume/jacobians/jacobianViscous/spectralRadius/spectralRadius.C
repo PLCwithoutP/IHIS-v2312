@@ -107,7 +107,7 @@ void spectralRadius::boundaryJacobian
 void spectralRadius::addViscousJacobian(compressibleJacobianMatrix& jacobian)
 {
     muLam_    = fvc::interpolate(thermo_.mu());
-    alphaLam_ = fvc::interpolate(thermo_.kappaTR()/thermo_.CvTR());
+    alphaLam_ = fvc::interpolate(thermo_.kappaTRWilke()/thermo_.CvTR());
 
     const surfaceScalarField& muLam    = muLam_();
     const surfaceScalarField& alphaLam = alphaLam_();

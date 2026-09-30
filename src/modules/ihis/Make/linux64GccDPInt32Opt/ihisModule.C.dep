@@ -694,6 +694,8 @@ $(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/bound.H \
 ../../solvers/lnInclude/ihisSolver.H \
 ../../solvers/lnInclude/ihisSolverNew.C \
 $(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/fvcSmooth.H \
+../../finiteVolume/lnInclude/discreteLaxFriedrichs.H \
+../../finiteVolume/lnInclude/laxFriedrichs.H \
 ../../finiteVolume/lnInclude/characteristicWallPressureFvPatchScalarField.H \
 $(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/fvPatchFields.H \
 $(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/fixedGradientFvPatchFields.H \
