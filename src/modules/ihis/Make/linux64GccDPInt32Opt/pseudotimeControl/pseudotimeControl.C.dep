@@ -565,7 +565,6 @@ $(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/zeroGradientFvPatchField.H \
 $(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/zeroGradientFvPatchField.C \
 $(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/fvPatchFieldMacros.H \
 $(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/solutionControlI.H \
-../../solvers/lnInclude/residualIO.H \
 pseudotimeControl/pseudotimeControlI.H \
 
 #END

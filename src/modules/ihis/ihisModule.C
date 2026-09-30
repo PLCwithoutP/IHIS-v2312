@@ -33,6 +33,8 @@ License
 #include "fvcSmooth.H"
 #include "jacobian.H"
 #include "discreteLaxFriedrichs.H"
+#include "reconstructionScheme.H"
+#include "cellFaceFunctions.H"
 #include "characteristicWallPressureFvPatchScalarField.H"
 #include "dynamicFvMesh.H"
 #include "fvcLaplacian.H"
@@ -41,6 +43,11 @@ License
 #include "fvcDiv.H"               // fvc::div
 #include "fvcSnGrad.H"            // fvc::snGrad
 #include "fvmDdt.H"               // fvm::ddt
+#include "fvmDiv.H"
+#include "fvmSup.H"
+#include "fvcDdt.H"
+#include "fvcSurfaceIntegrate.H"
+#include "upwind.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -298,6 +305,30 @@ void ihisModule::initialise()
         }
     }
 
+    // T5.7: rhoE is READ_IF_PRESENT but NO_WRITE, so any rhoE file in the start
+    // time comes from another run and bypasses the eZero(Y) encoding.
+    {
+        IOobject rhoEIO
+        (
+            "rhoE",
+            runTime.timeName(),
+            mesh,
+            IOobject::MUST_READ,
+            IOobject::NO_WRITE,
+            IOobject::NO_REGISTER
+        );
+
+        if (rhoEIO.typeHeaderOk<volScalarField>(true))
+        {
+            WarningInFunction
+                << "rhoE was read from " << rhoEIO.objectPath() << nl
+                << "    IHIS never writes rhoE, so this file comes from another run"
+                << " and bypasses the eZero(Y) encoding." << nl
+                << "    Delete it unless you know it was encoded with this case's"
+                << " species and thermo coefficients." << endl;
+        }
+    }
+    
     // User config check
     #include "config.H"
 
@@ -780,9 +811,15 @@ void ihisModule::outerIteration()
     phiEp_.clear();
     Up_.clear();
 
+    #include "speciesEqns.H"
+
     // Update fields
     #include "updateFields.H"
+    Info<< "min(rho) = " << gMin(rho.primitiveField())
+        << ", min(TTR) = " << gMin(neThermo.TTR().primitiveField()) << endl;
 
+    //#include "phase3Diagnostics.H"
+    
 }
 
 void ihisModule::updateEZero()

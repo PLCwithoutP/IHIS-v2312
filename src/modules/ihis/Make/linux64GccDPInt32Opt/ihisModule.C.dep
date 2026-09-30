@@ -696,6 +696,9 @@ $(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/bound.H \
 $(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/fvcSmooth.H \
 ../../finiteVolume/lnInclude/discreteLaxFriedrichs.H \
 ../../finiteVolume/lnInclude/laxFriedrichs.H \
+../../finiteVolume/lnInclude/reconstructionScheme.H \
+../../finiteVolume/lnInclude/reconstructionScheme.C \
+../../finiteVolume/lnInclude/cellFaceFunctions.H \
 ../../finiteVolume/lnInclude/characteristicWallPressureFvPatchScalarField.H \
 $(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/fvPatchFields.H \
 $(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/fixedGradientFvPatchFields.H \
@@ -851,6 +854,17 @@ $(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/fvmDdt.C \
 $(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/ddtScheme.H \
 $(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/ddtScheme.C \
 $(WM_PROJECT_DIR)/src/OpenFOAM/lnInclude/registerSwitch.H \
+$(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/fvmDiv.H \
+$(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/fvmDiv.C \
+$(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/fvmSup.H \
+$(WM_PROJECT_DIR)/src/OpenFOAM/lnInclude/zeroField.H \
+$(WM_PROJECT_DIR)/src/OpenFOAM/lnInclude/zeroFieldI.H \
+$(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/fvmSup.C \
+$(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/fvcDdt.H \
+$(WM_PROJECT_DIR)/src/OpenFOAM/lnInclude/geometricZeroField.H \
+$(WM_PROJECT_DIR)/src/OpenFOAM/lnInclude/zeroFieldField.H \
+$(WM_PROJECT_DIR)/src/OpenFOAM/lnInclude/geometricZeroFieldI.H \
+$(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/fvcDdt.C \
 ../solver/lnInclude/createDynamicFvMesh.H \
 createFields.H \
 $(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/createFvOptions.H \
@@ -859,6 +873,7 @@ compressibleCourantNo.H \
 ptrRefs.H \
 residualsUpdate.H \
 cellDebug.H \
+speciesEqns.H \
 updateFields.H \
 
 #END

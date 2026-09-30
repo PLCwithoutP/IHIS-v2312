@@ -67,6 +67,9 @@ License
     );
     volScalarField eBound(neThermo.eTR(neThermo.p(), TBound));
 
+    //Info<< "T5.4a: min(e - eBound) cells = "
+    //    << gMin((e.primitiveField() - eBound.primitiveField())()) << endl;
+
     if (max(neg(e-eBound)).value() > 0.5)
     {
         e = max(e, eBound);
