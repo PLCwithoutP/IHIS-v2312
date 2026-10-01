@@ -48,6 +48,7 @@ License
 #include "fvcDdt.H"
 #include "fvcSurfaceIntegrate.H"
 #include "upwind.H"
+#include "fvmLaplacian.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -305,7 +306,7 @@ void ihisModule::initialise()
         }
     }
 
-    // T5.7: rhoE is READ_IF_PRESENT but NO_WRITE, so any rhoE file in the start
+    // rhoE is READ_IF_PRESENT but NO_WRITE, so any rhoE file in the start
     // time comes from another run and bypasses the eZero(Y) encoding.
     {
         IOobject rhoEIO
@@ -328,7 +329,7 @@ void ihisModule::initialise()
                 << " species and thermo coefficients." << endl;
         }
     }
-    
+
     // User config check
     #include "config.H"
 
@@ -560,6 +561,77 @@ void ihisModule::outerIteration()
 
     // Interpolation of primitive fields on faces
     flux.calcFlux(phi, phiUp, phiEp, Up);
+
+    // Species diffusion coefficient, constant Lewis number:
+    //   rho*D = Le*kappa_Wilke/Cp_TR   (same for all species -> sum of J_s = 0)
+    // Built once per outer iteration from the current thermo state; used by the
+    // energy residual and the species Laplacian (speciesEqns.H).
+    tmp<volScalarField> trhoD;
+    if (!inviscid_ && neThermo.composition().Y().size() > 1)
+    {
+        const scalar Le = neThermo.getOrDefault<scalar>("Le", 1.4);
+        trhoD = Le*neThermo.kappaTRWilke()/neThermo.CpTR();
+        trhoD.ref().rename("rhoD");
+    }
+
+    // Species enthalpies on IHIS's energy datum (same as updateEZero()):
+    //   h_s = Hs(s,p,T) - hOff_s,   hOff_s = EsT(s,p0,T0) - Hc(s),   p0 = T0 = SMALL
+    // so that sum_s Y_s h_s = (e - eZero) + p/rho. Built only when diffusion is active.
+    PtrList<volScalarField> hs;
+    if (trhoD.valid())
+    {
+        const compositionInterface& comp = neThermo.composition();
+        const volScalarField& pTh = neThermo.p();
+        const volScalarField& TTh = neThermo.TTR();
+
+        hs.setSize(comp.Y().size());
+
+        forAll(hs, s)
+        {
+            const scalar hOff = comp.EsT(s, SMALL, SMALL) - comp.Hc(s);
+
+            hs.set
+            (
+                s,
+                new volScalarField
+                (
+                    IOobject
+                    (
+                        "h_" + comp.species()[s],
+                        mesh.time().timeName(),
+                        mesh,
+                        IOobject::NO_READ,
+                        IOobject::NO_WRITE,
+                        IOobject::NO_REGISTER
+                    ),
+                    mesh,
+                    dimensionedScalar(dimEnergy/dimMass, Zero)
+                )
+            );
+
+            // Cells
+            const scalarField& pI = pTh.primitiveField();
+            const scalarField& TI = TTh.primitiveField();
+            scalarField& hI = hs[s].primitiveFieldRef();
+            forAll(hI, celli)
+            {
+                hI[celli] = comp.Hs(s, pI[celli], TI[celli]) - hOff;
+            }
+
+            // Patches (all, including processor: h_s depends only on p and T)
+            volScalarField::Boundary& hBf = hs[s].boundaryFieldRef();
+            forAll(hBf, patchi)
+            {
+                const scalarField& pP = pTh.boundaryField()[patchi];
+                const scalarField& TP = TTh.boundaryField()[patchi];
+                scalarField& hP = hBf[patchi];
+                forAll(hP, facei)
+                {
+                    hP[facei] = comp.Hs(s, pP[facei], TP[facei]) - hOff;
+                }
+            }
+        }
+    }
 
     // Update residuals
     #include "residualsUpdate.H"
@@ -818,7 +890,6 @@ void ihisModule::outerIteration()
     Info<< "min(rho) = " << gMin(rho.primitiveField())
         << ", min(TTR) = " << gMin(neThermo.TTR().primitiveField()) << endl;
 
-    //#include "phase3Diagnostics.H"
     
 }
 
@@ -851,7 +922,7 @@ void ihisModule::updateEZero()
 
     eZero_() = neThermo.eTR(pZero, TZero) - neThermo.hc();
 
-    // T6.12: eZero must be finite everywhere (moved here from createFields.H)
+    // eZero must be finite everywhere (moved here from createFields.H)
     {
         bool finite = true;
 

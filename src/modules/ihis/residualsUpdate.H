@@ -72,7 +72,59 @@ License
         rhoER += fvc::div(sigmaDotU);
 
         volScalarField eCalc("eCalc", rhoE/rho-0.5*magSqr(U)); // prevent e inheriting BC from T in neThermo
-        rhoER += fvc::laplacian(alphaLam, eCalc, "laplacian(alphaLam,e)");
+        if (trhoD.valid())
+        {
+            // Frozen-mixture energy diffusion (viscous, Ns > 1):
+            //   div(kappa grad T) - div(sum_s h_s J_s),   J_s = -rhoD grad Y_s
+            // Reuses the "laplacian(alphaLam,e)" scheme label (no case change).
+            rhoER += fvc::laplacian
+            (
+                neThermo.kappaTRWilke(),
+                neThermo.TTR(),
+                "laplacian(alphaLam,e)"
+            );
+
+            const PtrList<volScalarField>& Ys = neThermo.composition().Y();
+            const label last = Ys.size() - 1;
+            const surfaceScalarField rhoDf(fvc::interpolate(trhoD()));
+
+            surfaceScalarField phiJSum
+            (
+                IOobject("phiJSum", runTime.timeName(), mesh),
+                mesh,
+                dimensionedScalar(dimMass/dimTime, Zero)
+            );
+            surfaceScalarField hJ
+            (
+                IOobject("hJ", runTime.timeName(), mesh),
+                mesh,
+                dimensionedScalar(dimPower, Zero)
+            );
+            #if OPENFOAM >= 1712
+            phiJSum.setOriented(true);   // face fluxes are oriented (like phi)
+            hJ.setOriented(true);
+            #endif
+
+            // Face diffusive mass fluxes; last species closes sum_s phiJ_s = 0
+            for (label s = 0; s < last; ++s)
+            {
+                const surfaceScalarField phiJs
+                (
+                    -rhoDf*fvc::snGrad(Ys[s])*mesh.magSf()
+                );
+                hJ += fvc::interpolate(hs[s])*phiJs;
+                phiJSum += phiJs;
+            }
+            hJ -= fvc::interpolate(hs[last])*phiJSum;
+
+            rhoER -= fvc::surfaceIntegrate(hJ);
+        }
+        else
+        {
+            // Inviscid-free single species (Phase 2 path, unchanged)
+            volScalarField eCalc("eCalc", rhoE/rho-0.5*magSqr(U)); // prevent e inheriting BC from T in neThermo
+            rhoER += fvc::laplacian(alphaLam, eCalc, "laplacian(alphaLam,e)");
+        }
     }
 
     #include "cellDebug.H"

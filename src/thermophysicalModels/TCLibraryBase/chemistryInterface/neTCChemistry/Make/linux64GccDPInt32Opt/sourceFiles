@@ -1,8 +1,0 @@
-SOURCE = \
-neChemistryModel/basicNeChemistryModel/basicNeChemistryModel.C \
-neChemistryModel/BasicNeChemistryModel/BasicNeChemistryModels.C \
-neChemistrySolver/neChemistrySolver/makeNeChemistrySolvers.C \
-functionObjects/neSpecieReactionRatesCheck/neSpecieReactionRatesCheck.C \
-functionObjects/neReactionTracker/neReactionTracker.C \
-
-# sources

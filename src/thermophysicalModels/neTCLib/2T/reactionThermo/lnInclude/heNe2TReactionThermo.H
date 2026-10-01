@@ -1,1 +1,0 @@
-../ne2TReactionThermo/heNe2TReactionThermo.H

@@ -1,1 +1,0 @@
-../boundaryConditions/constraint/coupledSymmetryPlane/coupledSymmetryPlaneFvPatchVectorField.C
