@@ -133,6 +133,8 @@ void ihisModule::setPseudoDeltaT()
         }
     }
 
+    // A cell with no faces (all-empty single-cell case) has rPseudoDeltaT = 0,
+    // i.e. an infinite pseudo time step; guard the reciprocal in the log only.
     Info << "Pseudo Courant No: " << pseudoCoNum_->value() << endl;
     if (localTimestepping_)
     {
@@ -149,15 +151,15 @@ void ihisModule::setPseudoDeltaT()
         }
         Info<< "Pseudo deltaT: "
             << "Min: "
-            << 1.0/gMax(rPseudoDeltaT.primitiveField())
+            << 1.0/max(gMax(rPseudoDeltaT.primitiveField()), VSMALL)
             << " Mean: "
-            << gSum(1.0/rPseudoDeltaT.primitiveField())/totCells
+            << 	gSum(1.0/max(rPseudoDeltaT.primitiveField(), VSMALL))/totCells
             << " Max: "
-            << 1.0/gMin(rPseudoDeltaT.primitiveField()) << endl;
+            << 	1.0/max(gMin(rPseudoDeltaT.primitiveField()), VSMALL) << endl;
     }
     else
     {
-        Info << "Pseudo deltaT: " << 1.0/gMin(rPseudoDeltaT.primitiveField()) << endl;
+        Info << "Pseudo deltaT: " << 1.0/max(gMin(rPseudoDeltaT.primitiveField()), VSMALL) << endl;
     }
 }
 
@@ -184,11 +186,18 @@ void ihisModule::setPseudoCoNum()
             scalar normFirst = sqrt(magSqr(firstRes().getScalar(0)) +
                                 magSqr(firstRes().getScalar(1)) +
                                 magSqr(firstRes().getVector(0)));
-            scalar coNumRatio = normFirst/normCurr/pseudoCoNum_().value()*pseudoCoNumInit_;
-            coNumRatio = max(min(coNumRatio, pseudoCoNumMaxIncr_), pseudoCoNumMinDecr_);
-            pseudoCoNum_() *= coNumRatio;
-            pseudoCoNum_().value() = max(min(pseudoCoNum_().value(), pseudoCoNumMax_), pseudoCoNumMin_);
-        }
+            // A zero flow residual (e.g. a sealed, uniform single-cell heat
+            // bath: no fluxes, rho/rhoU/rhoE constant) makes the SER ratio
+            // 0/0. Keep pseudoCoNum unchanged then. Real flows never reach an
+            // exactly zero residual, so their behaviour is unchanged.
+            if (normCurr > VSMALL)
+            {
+                scalar coNumRatio = normFirst/normCurr/pseudoCoNum_().value()*pseudoCoNumInit_;
+                coNumRatio = max(min(coNumRatio, pseudoCoNumMaxIncr_), pseudoCoNumMinDecr_);
+                pseudoCoNum_() *= coNumRatio;
+                pseudoCoNum_().value() = max(min(pseudoCoNum_().value(), pseudoCoNumMax_), pseudoCoNumMin_);
+            }
+            }
         prevRes_.clear();
         prevRes_.reset(new residualIO(res_()));
     }

@@ -1,1 +1,0 @@
-../derivedFv2TPatchFields/energy2TJump/energy2TJumpAMI/energy2TJumpAMIFvPatchScalarField.C

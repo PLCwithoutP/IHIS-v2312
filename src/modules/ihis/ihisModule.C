@@ -50,8 +50,6 @@ License
 #include "upwind.H"
 #include "fvmLaplacian.H"
 
-#include "IOmanip.H"   // TEMPORARY (Phase 4 probe): setprecision. Remove in T8.10.
-
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
 namespace Foam
@@ -330,8 +328,6 @@ void ihisModule::initialise()
                 << " species and thermo coefficients." << endl;
         }
     }
-
-    #include "phase4Probe.H"
     
     // User config check
     #include "config.H"
@@ -893,7 +889,6 @@ void ihisModule::outerIteration()
     Info<< "min(rho) = " << gMin(rho.primitiveField())
         << ", min(TTR) = " << gMin(neThermo.TTR().primitiveField()) << endl;
 
-    
 }
 
 void ihisModule::updateEZero()

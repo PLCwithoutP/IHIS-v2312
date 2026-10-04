@@ -1,1 +1,0 @@
-../neChemistryReaders/neChemistryReader/makeNeChemistryReaders.C
