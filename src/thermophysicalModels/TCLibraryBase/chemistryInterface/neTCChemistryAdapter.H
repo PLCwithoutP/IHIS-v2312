@@ -50,6 +50,16 @@ public:
     {
         return model_->Qdot();
     }
+
+    void calculateWithJacobianDiag
+    (
+        const volScalarField::Internal& rho,
+        PtrList<volScalarField::Internal>& dRRdRhoY,
+        PtrList<volScalarField::Internal>& dRRdT
+    ) override
+    {
+        model_->calculateWithJacobianDiag(rho, dRRdRhoY, dRRdT);
+    }
 };
 
 } // End namespace Foam

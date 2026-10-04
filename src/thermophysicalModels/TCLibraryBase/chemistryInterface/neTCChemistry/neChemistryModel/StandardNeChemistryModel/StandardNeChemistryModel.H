@@ -222,6 +222,14 @@ public:
         //- Calculates the reaction rates
         virtual void calculate();
 
+        //- Rates and Jacobian diagonal at a caller-supplied density
+        //  (IHIS point-implicit sources; see basicNeChemistryModel.H)
+        virtual void calculateWithJacobianDiag
+        (
+            const volScalarField::Internal& rho,
+            PtrList<volScalarField::Internal>& dRRdRhoY,
+            PtrList<volScalarField::Internal>& dRRdT
+        ) override;
 
         // Chemistry model functions (overriding abstract functions in
         // basicChemistryModel.H)

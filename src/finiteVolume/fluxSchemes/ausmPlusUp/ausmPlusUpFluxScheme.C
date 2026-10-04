@@ -107,10 +107,14 @@ void Foam::ausmPlusUpFluxScheme::calcFlux(surfaceScalarField& phi, surfaceVector
     // Critical acoustic velocity (Liou 2006)
     tmp< volScalarField > gamma = thermo_.gamma();
 
+    // E1a (Phase 4, C1): no positivity clamp on E. On the absolute-energy
+    // datum E can be negative in cold, slow gas (e.g. near a 300 K wall);
+    // H feeds only the conservative energy flux (rhoah_LR) and must be the
+    // true total enthalpy there.
     tmp< volScalarField > H
     (
-        (max(rhoE_/rho_,dimensionedScalar("0", rhoE_.dimensions()/rho_.dimensions(), SMALL)) +
-         max(p/rho_,dimensionedScalar("0", p.dimensions()/rho_.dimensions(), SMALL)))
+        rhoE_/rho_
+      + max(p/rho_, dimensionedScalar("0", p.dimensions()/rho_.dimensions(), SMALL))
     );
     H->rename("H");
 

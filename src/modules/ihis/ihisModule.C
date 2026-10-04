@@ -50,6 +50,8 @@ License
 #include "upwind.H"
 #include "fvmLaplacian.H"
 
+#include "IOmanip.H"   // TEMPORARY (Phase 4 probe): setprecision. Remove in T8.10.
+
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
 namespace Foam
@@ -265,11 +267,10 @@ void ihisModule::initialise()
 
     #include "createFields.H"
 
-    // IHIS: discreteLaxFriedrichs assumes a zero energy datum and
-    // is not mixture-ready. LHS only: affects convergence, not the answer.
+    // IHIS: discreteLaxFriedrichs assumes a zero energy datum, which the
+    // absolute-energy datum (E1a) violates for every Ns. LHS only: affects convergence, not the answer.
     // Walks the same dictionaries as the main Jacobian (flowSolver/<solver>)
     // and createPreconditioners (preconditioner chain).
-    if (neThermo.composition().Y().size() > 1)
     {
         const dictionary& flowDict = mesh.solutionDict().subDict("flowSolver");
         const word solverType(flowDict.get<word>("solver"));
@@ -289,8 +290,8 @@ void ihisModule::initialise()
                 WarningInFunction
                     << "inviscidJacobian " << discreteLaxFriedrichs::typeName
                     << " in " << d.name()
-                    << " assumes a zero energy datum and is not mixture-ready ("
-                    << neThermo.composition().Y().size() << " species)." << nl
+                    << " assumes a zero energy datum; IHIS stores the absolute energy" << nl
+                    << "    (formation energy included), so dp/drho can have the wrong sign." << nl
                     << "    Use laxFriedrichs or centralLaxFriedrichs." << endl;
             }
 
@@ -330,6 +331,8 @@ void ihisModule::initialise()
         }
     }
 
+    #include "phase4Probe.H"
+    
     // User config check
     #include "config.H"
 
@@ -575,7 +578,7 @@ void ihisModule::outerIteration()
     }
 
     // Species enthalpies on IHIS's energy datum (same as updateEZero()):
-    //   h_s = Hs(s,p,T) - hOff_s,   hOff_s = EsT(s,p0,T0) - Hc(s),   p0 = T0 = SMALL
+    //   h_s = Hs(s,p,T) - hOff_s,   hOff_s = -Hc(s),   i.e. h_s = Ha(s,p,T) (absolute)
     // so that sum_s Y_s h_s = (e - eZero) + p/rho. Built only when diffusion is active.
     PtrList<volScalarField> hs;
     if (trhoD.valid())
@@ -588,7 +591,7 @@ void ihisModule::outerIteration()
 
         forAll(hs, s)
         {
-            const scalar hOff = comp.EsT(s, SMALL, SMALL) - comp.Hc(s);
+            const scalar hOff = -comp.Hc(s);
 
             hs.set
             (
@@ -895,32 +898,9 @@ void ihisModule::outerIteration()
 
 void ihisModule::updateEZero()
 {
-    const fvMesh& mesh = mesh_();
     const ne2TReactionThermo& neThermo = pThermo_();
 
-    // Reference state (T -> 0 K); temporaries, not registered
-    const volScalarField TZero
-    (
-        IOobject
-        (
-            "TZero", mesh.time().timeName(), mesh,
-            IOobject::NO_READ, IOobject::NO_WRITE, IOobject::NO_REGISTER
-        ),
-        mesh,
-        dimensionedScalar("TZero", neThermo.TTR().dimensions(), SMALL)
-    );
-    const volScalarField pZero
-    (
-        IOobject
-        (
-            "pZero", mesh.time().timeName(), mesh,
-            IOobject::NO_READ, IOobject::NO_WRITE, IOobject::NO_REGISTER
-        ),
-        mesh,
-        dimensionedScalar("pZero", neThermo.p().dimensions(), SMALL)
-    );
-
-    eZero_() = neThermo.eTR(pZero, TZero) - neThermo.hc();
+    eZero_() = -neThermo.hc();
 
     // eZero must be finite everywhere (moved here from createFields.H)
     {
@@ -941,9 +921,8 @@ void ihisModule::updateEZero()
         if (!returnReduce(finite, andOp<bool>()))
         {
             FatalErrorInFunction
-                << "eZero is not finite. With twoTemperature false, the species"
-                << " Cp coefficients must stay finite at T = SMALL"
-                << " (raw NASA-9 a0/T^2 and a1*ln(T) terms diverge)."
+                << "eZero = -hc() is not finite. Check the formation-energy"
+                << " data (b1 coefficients / Hc) in the species dictionary."
                 << exit(FatalError);
         }
     }

@@ -173,6 +173,22 @@ public:
                 //- Calculates the reaction rates
                 virtual void calculate() = 0;
 
+                //- Calculates the reaction rates (fills RR) AND the diagonal of
+                //  the chemical Jacobian, at a caller-supplied density and the
+                //  thermo's current T, p, TVib and composition Y.
+                //  Used by IHIS for point-implicit species sources; never
+                //  advances the chemistry in time (no ODE solve).
+                //    dRRdRhoY[i] = d(omega_i)/d(rho Y_i)  [1/s]        (= dfdc(i,i))
+                //    dRRdT[i]    = d(omega_i)/dT          [kg/m3/s/K]  (= W_i*dfdc(i,Ns))
+                //  Both lists are sized and allocated on the first call if
+                //  empty, and overwritten on every call.
+                virtual void calculateWithJacobianDiag
+                (
+                    const volScalarField::Internal& rho,
+                    PtrList<volScalarField::Internal>& dRRdRhoY,
+                    PtrList<volScalarField::Internal>& dRRdT
+                ) = 0;
+
                 //- Solve the reaction system for the given time step
                 //  and return the characteristic time
                 virtual scalar solve(const scalar deltaT) = 0;

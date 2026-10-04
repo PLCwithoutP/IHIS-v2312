@@ -93,8 +93,45 @@ Foam::StandardNeChemistryModel<ReactionThermo, ThermoType>::StandardNeChemistryM
         );
     }
 
+    // IHIS : molecular-weight additivity of every reaction.
+    // A non-additive W set (e.g. W_N2 != 2*W_N) makes sum_s omega_s != 0,
+    // i.e. a spurious mass source in the species equations with no
+    // counterpart in continuity. Always a data error, hence fatal.
+    scalar maxDeltaW = 0;
+    forAll(reactions_, ri)
+    {
+        const neReaction<ThermoType>& R = reactions_[ri];
+
+        scalar Wl = 0;
+        scalar Wr = 0;
+        forAll(R.lhs(), i)
+        {
+            Wl += R.lhs()[i].stoichCoeff*specieThermo_[R.lhs()[i].index].W();
+        }
+        forAll(R.rhs(), i)
+        {
+            Wr += R.rhs()[i].stoichCoeff*specieThermo_[R.rhs()[i].index].W();
+        }
+
+        const scalar deltaW = mag(Wr - Wl)/max(Wl, SMALL);
+        maxDeltaW = max(maxDeltaW, deltaW);
+
+        if (deltaW > 1e-10)
+        {
+            FatalErrorInFunction
+                << "Reaction " << R.name() << " does not conserve mass:" << nl
+                << "    sum(nu*W) lhs = " << Wl << ", rhs = " << Wr
+                << ", relative difference " << deltaW << " > 1e-10." << nl
+                << "    Make the species molWeight entries exactly additive"
+                << " (e.g. W_N2 = 2*W_N)."
+                << exit(FatalError);
+        }
+    }
+
     Info<< "StandardNeChemistryModel: Number of species = " << nSpecie_
-        << " and reactions = " << nReaction_ << endl;
+        << " and reactions = " << nReaction_ << nl
+        << "    molecular-weight balance: max |sum(nu*W)_rhs - sum(nu*W)_lhs|"
+        << "/sum(nu*W)_lhs = " << maxDeltaW << endl;
 }
 
 
@@ -696,6 +733,108 @@ void Foam::StandardNeChemistryModel<ReactionThermo, ThermoType>::calculate()
         for (label i=0; i<nSpecie_; i++)
         {
             RR_[i][celli] = dcdt_[i]*specieThermo_[i].W();
+        }
+    }
+}
+
+template<class ReactionThermo, class ThermoType>
+void Foam::StandardNeChemistryModel<ReactionThermo, ThermoType>::
+calculateWithJacobianDiag
+(
+    const volScalarField::Internal& rho,
+    PtrList<volScalarField::Internal>& dRRdRhoY,
+    PtrList<volScalarField::Internal>& dRRdT
+)
+{
+    if (!this->chemistry_)
+    {
+        FatalErrorInFunction
+            << "Called with 'chemistry off' in chemistryProperties." << nl
+            << "    IHIS must only call this when chemistry is active."
+            << exit(FatalError);
+    }
+
+    // Allocate the outputs on the first call (kept by the caller afterwards)
+    if (dRRdRhoY.size() != nSpecie_ || dRRdT.size() != nSpecie_)
+    {
+        dRRdRhoY.resize(nSpecie_);
+        dRRdT.resize(nSpecie_);
+
+        forAll(Y_, i)
+        {
+            dRRdRhoY.set
+            (
+                i,
+                new volScalarField::Internal
+                (
+                    IOobject
+                    (
+                        "dRRdRhoY." + Y_[i].name(),
+                        this->mesh().time().timeName(),
+                        this->mesh(),
+                        IOobject::NO_READ,
+                        IOobject::NO_WRITE,
+                        IOobject::NO_REGISTER
+                    ),
+                    this->mesh(),
+                    dimensionedScalar(dimless/dimTime, Zero)
+                )
+            );
+            dRRdT.set
+            (
+                i,
+                new volScalarField::Internal
+                (
+                    IOobject
+                    (
+                        "dRRdT." + Y_[i].name(),
+                        this->mesh().time().timeName(),
+                        this->mesh(),
+                        IOobject::NO_READ,
+                        IOobject::NO_WRITE,
+                        IOobject::NO_REGISTER
+                    ),
+                    this->mesh(),
+                    dimensionedScalar
+                    (
+                        dimMass/dimVolume/dimTime/dimTemperature, Zero
+                    )
+                )
+            );
+        }
+    }
+
+    // Thermo state of the previous iteration (D4/D5): T, p, TVib at k
+    const scalarField& TTR = this->thermo().TTR();
+    const scalarField& TVib = this->thermo().TVib();
+    const scalarField& p = this->thermo().p();
+
+    // Locals, allocated once. Never pass the members c_ (length nSpecie_,
+    // overwritten inside jacobian) or dcdt_ (overwritten by its FD T column).
+    scalarField c(nSpecie_ + 2, Zero);
+    scalarField dcdt(nSpecie_ + 2, Zero);
+    scalarSquareMatrix J(nSpecie_ + 2, Zero);
+
+    forAll(rho, celli)
+    {
+        // controllingTemperature() reads TVibCell_ (2T only; G4)
+        TVibCell_ = TVib[celli];
+
+        for (label i=0; i<nSpecie_; i++)
+        {
+            c[i] = rho[celli]*Y_[i][celli]/specieThermo_[i].W();
+        }
+        c[nSpecie_] = TTR[celli];
+        c[nSpecie_ + 1] = p[celli];
+
+        jacobian(0, c, dcdt, J);
+
+        for (label i=0; i<nSpecie_; i++)
+        {
+            const scalar Wi = specieThermo_[i].W();
+            RR_[i][celli] = dcdt[i]*Wi;          // [kg/m3/s]
+            dRRdRhoY[i][celli] = J(i, i);         // d(omega_i)/d(rho Y_i) [1/s]
+            dRRdT[i][celli] = Wi*J(i, nSpecie_);  // d(omega_i)/dT [kg/m3/s/K]
         }
     }
 }

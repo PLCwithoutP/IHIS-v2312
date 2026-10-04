@@ -11,6 +11,8 @@
       RR(i)     — species source term field i
       RR()      — all species source term fields
       Qdot()    — heat release rate field
+      calculateWithJacobianDiag() — RR plus Jacobian diagonal at given rho (IHIS)
+
 
     Factory reads the same 'library' keyword used by tcLibraryInterface.
     The dynamic_cast from tcLibraryInterface to ne2TReactionThermo lives
@@ -59,6 +61,19 @@ public:
 
     //- Heat release rate [kg/m/s3]
     virtual tmp<volScalarField> Qdot() const = 0;
+
+    //- Rates (into RR) and the diagonal of the chemical Jacobian at a
+    //  caller-supplied density. No ODE time advance. Used by IHIS for
+    //  point-implicit species sources (Phase 4, D6).
+    //    dRRdRhoY[i] = d(omega_i)/d(rho Y_i)  [1/s]
+    //    dRRdT[i]    = d(omega_i)/dT          [kg/m3/s/K]
+    //  Lists are allocated on the first call and overwritten afterwards.
+    virtual void calculateWithJacobianDiag
+    (
+        const volScalarField::Internal& rho,
+        PtrList<volScalarField::Internal>& dRRdRhoY,
+        PtrList<volScalarField::Internal>& dRRdT
+    ) = 0;
 };
 
 } // End namespace Foam
