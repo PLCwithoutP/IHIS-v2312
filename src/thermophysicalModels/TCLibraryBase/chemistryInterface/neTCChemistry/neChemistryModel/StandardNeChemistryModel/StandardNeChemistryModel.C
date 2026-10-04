@@ -34,6 +34,35 @@ License
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 template<class ReactionThermo, class ThermoType>
+const Foam::neReactingMixture<ThermoType>&
+Foam::StandardNeChemistryModel<ReactionThermo, ThermoType>::reactingMixture
+(
+    const ReactionThermo& thermo
+)
+{
+    const auto* mixPtr =
+        dynamic_cast<const neReactingMixture<ThermoType>*>
+        (
+            &thermo.composition()
+        );
+
+    if (!mixPtr)
+    {
+        FatalErrorInFunction
+            << "Finite-rate chemistry needs a reacting mixture, but"
+            << " thermoType/mixture is '"
+            << thermo.subDict("thermoType").template
+               getOrDefault<word>("mixture", "unknown")
+            << "'." << nl
+            << "    Set 'mixture neReactingMixture;' in thermophysicalProperties"
+            << " (or set 'chemistry false;' for a frozen run)."
+            << exit(FatalError);
+    }
+
+    return *mixPtr;
+}
+
+template<class ReactionThermo, class ThermoType>
 Foam::StandardNeChemistryModel<ReactionThermo, ThermoType>::StandardNeChemistryModel
 (
     ReactionThermo& thermo
@@ -42,20 +71,8 @@ Foam::StandardNeChemistryModel<ReactionThermo, ThermoType>::StandardNeChemistryM
     BasicNeChemistryModel<ReactionThermo>(thermo),
     ODESystem(),
     Y_(this->thermo().composition().Y()),
-    reactions_
-    (
-        dynamic_cast<const neReactingMixture<ThermoType>&>
-        (
-            this->thermo().composition()
-        )
-    ),
-    specieThermo_
-    (
-        dynamic_cast<const neReactingMixture<ThermoType>&>
-        (
-            this->thermo().composition()
-        ).speciesData()
-    ),
+    reactions_(reactingMixture(this->thermo())),
+    specieThermo_(reactingMixture(this->thermo()).speciesData()),
     nSpecie_(Y_.size()),
     nReaction_(reactions_.size()),
     Treact_

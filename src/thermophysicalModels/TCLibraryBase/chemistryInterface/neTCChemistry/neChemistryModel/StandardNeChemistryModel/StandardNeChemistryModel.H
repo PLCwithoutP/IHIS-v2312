@@ -53,7 +53,8 @@ namespace Foam
 
 // Forward declaration of classes
 class fvMesh;
-
+// Forward declaration (full definition needed only in the .C)
+template<class ThermoType> class neReactingMixture;
 /*---------------------------------------------------------------------------*\
                       Class StandardNeChemistryModel Declaration
 \*---------------------------------------------------------------------------*/
@@ -132,6 +133,13 @@ protected:
         (
             const neReaction<ThermoType>& R
         ) const;
+
+        //- Return the composition as a neReactingMixture, or stop with a
+        //  readable error (chemistry needs a mixture that owns reactions)
+        static const neReactingMixture<ThermoType>& reactingMixture
+        (
+            const ReactionThermo& thermo
+        );
 
 public:
 

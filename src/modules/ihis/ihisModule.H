@@ -48,6 +48,7 @@ Authors
 #include "solverModule.H"
 #include "pimpleControl.H"
 #include "ne2TReactionThermo.H"
+#include "chemistryInterface.H"
 #include "zeroGradientFvPatchFields.H"
 #include "fluxScheme.H"
 #include "pseudotimeControl/pseudotimeControl.H"
@@ -104,6 +105,15 @@ protected:
         // absolute internal energy
         autoPtr<volScalarField> eZero_;
         autoPtr<volScalarField> eVibMix_;
+
+        //- Finite-rate chemistry. Constructed only when
+        //  thermophysicalProperties 'chemistry' is true and Ns > 1.
+        autoPtr<chemistryInterface> chemistry_;
+
+        //- Chemical Jacobian diagonal, filled each outer
+        //  iteration by chemistry_->calculateWithJacobianDiag()
+        PtrList<volScalarField::Internal> dRRdRhoY_;
+        PtrList<volScalarField::Internal> dRRdT_;
 
         autoPtr<volScalarField> rPseudoDeltaT_;
         // 1/dt (for Euler), or equivalent for other schemes

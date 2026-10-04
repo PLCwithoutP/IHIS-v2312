@@ -1,0 +1,5 @@
+SOURCE = \
+specie2T/specie2T.C \
+reaction/neReactions/makeNeReactions.C \
+
+# sources

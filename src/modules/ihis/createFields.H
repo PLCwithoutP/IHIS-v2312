@@ -112,6 +112,38 @@ eZero_.reset
 );
 updateEZero();
 
+
+// Finite-rate chemistry. Master switch is 'chemistry' in
+// thermophysicalProperties (the same key that makes the mixture read
+// reactionsList); built only for mixtures. Never use Qdot() in rhoE:
+// chemistry is energy-neutral by construction (E1a).
+if
+(
+    neThermo.getOrDefault<bool>("chemistry", false)
+ && neThermo.composition().Y().size() > 1
+)
+{
+    chemistry_ = chemistryInterface::New(neThermo);
+
+    // The model registered constant/chemistryProperties during construction;
+    // its own switch must agree, otherwise calculateWithJacobianDiag()
+    // would refuse to run (and calculate() would silently return).
+    const IOdictionary& chemProps =
+        mesh.lookupObject<IOdictionary>("chemistryProperties");
+
+    if (!chemProps.get<Switch>("chemistry"))
+    {
+        FatalErrorInFunction
+            << "'chemistry' is true in thermophysicalProperties but false in "
+            << chemProps.objectPath() << nl
+            << "    Both switches must agree for a reacting run."
+            << exit(FatalError);
+    }
+
+    Info<< "IHIS: finite-rate chemistry active ("
+        << neThermo.composition().Y().size() << " species)" << nl << endl;
+}
+
 eVibMix_.reset
 (
     new volScalarField
