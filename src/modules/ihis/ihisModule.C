@@ -575,7 +575,7 @@ void ihisModule::outerIteration()
 
     // Species enthalpies on IHIS's energy datum (same as updateEZero()):
     //   h_s = Hs(s,p,T) - hOff_s,   hOff_s = -Hc(s),   i.e. h_s = Ha(s,p,T) (absolute)
-    // so that sum_s Y_s h_s = (e - eZero) + p/rho. Built only when diffusion is active.
+    // so that sum_s Y_s h_s = (e - eZero + eVibMix) + p/rho. Built only when diffusion is active.
     PtrList<volScalarField> hs;
     if (trhoD.valid())
     {
@@ -628,6 +628,19 @@ void ihisModule::outerIteration()
                 {
                     hP[facei] = comp.Hs(s, pP[facei], TP[facei]) - hOff;
                 }
+            }
+        }
+        // Each molecule's enthalpy carries its own vibrational
+        // energy, h_s += e_v,s(T_v,s), cells and all patches. evVib_ holds
+        // neighbour values on processor patches, as p and T do here. Then
+        //   sum_s Y_s h_s = (e - eZero + eVibMix) + p/rho,
+        // and -div(sum_s h_s J_s) in rhoE contains -div(sum_m e_v,m J_m),
+        // the same term each vibrational equation subtracts (D5).
+        if (twoT_)
+        {
+            forAll(molI_, m)
+            {
+                hs[molI_[m]] += evVib_[m];
             }
         }
     }
@@ -884,6 +897,72 @@ void ihisModule::outerIteration()
 
     #include "speciesEqns.H"
 
+    #include "vibEqns.H" 
+
+    // TEMPORARY (Phase 5, removed in T9.7): vibrational consistency probes.
+    // T8.1  harmonic-oscillator round trip on the actual fields
+    // T8.2  thermo eVib (per-species, after N2) at the mixture Tv  vs  sum_m eps_m
+    // T8.3  TR inversion and energy partition after the decode
+    if (twoT_)
+    {
+        const compositionInterface& comp = neThermo.composition();
+        const PtrList<volScalarField>& Yv = comp.Y();
+        const scalarField& pI = neThermo.p().primitiveField();
+        const scalarField& TI = neThermo.TTR().primitiveField();
+        const scalar TvMin = vibTvMin();
+
+        // T8.1: max |EsVib(Tv_m) - e_v,m| / e_v,m over present, unfloored molecules
+        scalar errHO = 0;
+        forAll(molI_, m)
+        {
+            const label s = molI_[m];
+            const scalar th = comp.thetaVib(s);
+            const scalarField& evI = evVib_[m].primitiveField();
+            const scalarField& TvI = TVibSpecies_[s].primitiveField();
+            const scalarField& YI  = Yv[s].primitiveField();
+
+            forAll(evI, celli)
+            {
+                if (YI[celli] >= 1e-10 && evI[celli] > VSMALL && TvI[celli] > TvMin)
+                {
+                    errHO = max
+                    (
+                        errHO,
+                        mag(comp.EsVib(s, pI[celli], TI[celli], TvI[celli], th) - evI[celli])
+                    /evI[celli]
+                    );
+                }
+            }
+        }
+        reduce(errHO, maxOp<scalar>());
+
+        // T8.2: thermo's own e_v at the mixture Tv must equal sum_m eps_m (D1 + N2)
+        neThermo.correctVibEnergy();
+        const scalarField& eVth  = neThermo.eVib().primitiveField();      // accessor
+        const scalarField& eVmix = eVibMix_().primitiveField();
+        const scalar errMix =
+            gMax(mag(eVth - eVmix)())/max(gMax(mag(eVmix)()), VSMALL);
+
+        // T8.3: TR inversion (e vs e_TR(p, T)) and energy partition of rhoE
+        const tmp<volScalarField> teCheck = neThermo.eTR(p, T);
+        const scalarField& eI = e.primitiveField();
+        const scalar errInv =
+            gMax(mag(eI - teCheck().primitiveField())())/max(gMax(mag(eI)()), VSMALL);
+
+        const scalarField Eint
+        (
+            rhoE.primitiveField()/rho.primitiveField() - 0.5*magSqr(U.primitiveField())
+        );
+        const scalar errPart =
+            gMax(mag(Eint - (eI - eZero_().primitiveField() + eVmix))())
+        /max(gMax(mag(Eint)()), VSMALL);
+
+        Info<< "Phase5Probe: HO round trip = " << errHO
+            << ", thermo eVib vs sum eps = " << errMix
+            << ", TR inversion = " << errInv
+            << ", energy partition = " << errPart << endl;
+    }
+    
     // Update fields
     #include "updateFields.H"
     Info<< "min(rho) = " << gMin(rho.primitiveField())

@@ -144,6 +144,215 @@ if
         << neThermo.composition().Y().size() << " species)" << nl << endl;
 }
 
+// Two-temperature (Phase 5): one transported vibrational energy per molecule,
+// frozen (no V-T, V-V or C-V sources until Phase 6). IHIS owns the vibrational
+// state; the thermo only receives the mixture TVib (D1). All cases use a
+// multi-component mixture, so Y() is never empty (the thermo enforces this in 2T).
+twoT_ = neThermo.twoTemperature();
+
+if (twoT_)
+{
+    // Gate on the switch, not on chemistry_: chemistry_ is built only for
+    // Ns > 1, so a single-species 2T case with chemistry true would slip through.
+    if (neThermo.getOrDefault<bool>("chemistry", false))
+    {
+        FatalErrorInFunction
+            << "twoTemperature and chemistry are both true." << nl
+            << "    Finite-rate chemistry in 2T (Park T_ctrl, d(omega)/dTv,"
+            << " C-V coupling) arrives in Phase 6; set chemistry false for"
+            << " 2T runs."
+            << exit(FatalError);
+    }
+
+    const compositionInterface& comp = neThermo.composition();
+    const PtrList<volScalarField>& Ys = comp.Y();
+
+    // Molecules = species with a vibrational mode; molI_[m] = species index
+    DynamicList<label> mols(Ys.size());
+    forAll(Ys, s)
+    {
+        if (comp.isSpecieMolecular(s))
+        {
+            mols.append(s);
+        }
+    }
+    molI_.transfer(mols);
+
+    if (molI_.empty())
+    {
+        FatalErrorInFunction
+            << "twoTemperature is true but no species is molecular:"
+            << " there is no vibrational mode to transport."
+            << exit(FatalError);
+    }
+
+    Info<< "IHIS: two-temperature active, " << molI_.size()
+        << " vibrational equation(s):";
+    forAll(molI_, m)
+    {
+        Info<< ' ' << comp.species()[molI_[m]];
+    }
+
+    // Per-species vibrational temperature, Ns entries in species order
+    // (the layout the V-T/V-V sources expect).
+    // Molecules: TVib_<name>, read if present (restart), otherwise a copy of the
+    // mixture TVib (values and patch types). Atoms: hold T_TR, never written.
+    TVibSpecies_.setSize(Ys.size());
+
+    forAll(Ys, s)
+    {
+        const word fieldName("TVib_" + comp.species()[s]);
+
+        if (comp.isSpecieMolecular(s))
+        {
+            IOobject io
+            (
+                fieldName,
+                runTime.timeName(),
+                mesh,
+                IOobject::READ_IF_PRESENT,
+                IOobject::AUTO_WRITE
+            );
+
+            if (io.typeHeaderOk<volScalarField>(true))
+            {
+                TVibSpecies_.set(s, new volScalarField(io, mesh));
+                Info<< "    " << fieldName << ": read" << nl;
+            }
+            else
+            {
+                io.readOpt(IOobject::NO_READ);
+                TVibSpecies_.set(s, new volScalarField(io, neThermo.TVib()));
+                Info<< "    " << fieldName << ": initialised from TVib" << nl;
+            }
+        }
+        else
+        {
+            TVibSpecies_.set
+            (
+                s,
+                new volScalarField
+                (
+                    IOobject
+                    (
+                        fieldName,
+                        runTime.timeName(),
+                        mesh,
+                        IOobject::NO_READ,
+                        IOobject::NO_WRITE,
+                        IOobject::NO_REGISTER
+                    ),
+                    neThermo.TTR()
+                )
+            );
+        }
+    }
+    Info<< endl;
+
+    // eps_m = Y_m*e_v,m (unknowns) and e_v,m (derived), Nm entries.
+    // Patch types follow the molecule's own TVib_<m> patch types (D7):
+    //   constraint patch (empty, symmetry, wedge, cyclic, processor, ...) -> same type
+    //   TVib fixes the value                  -> fixedValue (refreshed every iteration)
+    //   anything else                         -> zeroGradient (Phase 7: wall jump BCs)
+    // Values are set by vibEncode() (T3.5); allocated as zero here.
+    epsVib_.setSize(molI_.size());
+    evVib_.setSize(molI_.size());
+
+    forAll(molI_, m)
+    {
+        const label s = molI_[m];
+        const word& sName = comp.species()[s];
+        const volScalarField::Boundary& TvBf = TVibSpecies_[s].boundaryField();
+
+        wordList types(TvBf.size());
+        forAll(TvBf, patchi)
+        {
+            const word& pType = mesh.boundaryMesh()[patchi].type();
+
+            if (polyPatch::constraintType(pType))
+            {
+                types[patchi] = pType;
+            }
+            else if (TvBf[patchi].fixesValue())
+            {
+                types[patchi] = fixedValueFvPatchScalarField::typeName;
+            }
+            else
+            {
+                types[patchi] = zeroGradientFvPatchScalarField::typeName;
+            }
+        }
+
+        evVib_.set
+        (
+            m,
+            new volScalarField
+            (
+                IOobject
+                (
+                    "evVib_" + sName,
+                    runTime.timeName(),
+                    mesh,
+                    IOobject::NO_READ,
+                    IOobject::NO_WRITE
+                ),
+                mesh,
+                dimensionedScalar(dimEnergy/dimMass, Zero),
+                types
+            )
+        );
+
+        epsVib_.set
+        (
+            m,
+            new volScalarField
+            (
+                IOobject
+                (
+                    "epsVib_" + sName,
+                    runTime.timeName(),
+                    mesh,
+                    IOobject::NO_READ,
+                    IOobject::NO_WRITE
+                ),
+                mesh,
+                dimensionedScalar(dimEnergy/dimMass, Zero),
+                types
+            )
+        );
+    }
+
+    // Molecule face mass fractions used by vibEqns.H (D3).
+    // Ns > 1: refreshed every outer iteration from the species loop (T6.1).
+    // Ns = 1: the species loop never runs and Y_f = 1 exactly, so this
+    //         uniform value is final (T3.6).
+    YfMol_.setSize(molI_.size());
+    forAll(molI_, m)
+    {
+        YfMol_.set
+        (
+            m,
+            new surfaceScalarField
+            (
+                IOobject
+                (
+                    "YfMol_" + comp.species()[molI_[m]],
+                    runTime.timeName(),
+                    mesh,
+                    IOobject::NO_READ,
+                    IOobject::NO_WRITE,
+                    IOobject::NO_REGISTER
+                ),
+                mesh,
+                dimensionedScalar(dimless, 1.0)
+            )
+        );
+    }
+
+    Info<< nl << endl;
+}
+
+
 eVibMix_.reset
 (
     new volScalarField
@@ -160,6 +369,14 @@ eVibMix_.reset
         dimensionedScalar("zero", e.dimensions(), 0.0)
     )
 );
+
+// Model checks, then Tv_m -> e_v,m, eps_m, mixture TVib and
+// eVibMix_ = sum eps_m, before rhoE is encoded below (D8, F33)
+if (twoT_)
+{
+    vibCheckModel();
+    vibEncode();
+}
 
 scalarVars_.set
 (

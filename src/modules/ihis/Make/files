@@ -1,6 +1,7 @@
 pseudotimeControl/pseudotimeControl.C
 ihisModule.C
 ihisModuleTimestepping.C
+ihisModuleVib.C
 
 LIB = $(FOAM_USER_LIBBIN)/libihisModule
 

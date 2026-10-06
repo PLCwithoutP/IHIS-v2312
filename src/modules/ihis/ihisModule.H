@@ -50,6 +50,7 @@ Authors
 #include "ne2TReactionThermo.H"
 #include "chemistryInterface.H"
 #include "zeroGradientFvPatchFields.H"
+#include "fixedValueFvPatchFields.H"
 #include "fluxScheme.H"
 #include "pseudotimeControl/pseudotimeControl.H"
 #include "jacobian.H"
@@ -105,6 +106,34 @@ protected:
         // absolute internal energy
         autoPtr<volScalarField> eZero_;
         autoPtr<volScalarField> eVibMix_;
+
+        //- Two-temperature active (= neThermo.twoTemperature(), set in createFields.H)
+        bool twoT_ = false;
+
+        //- Species index of molecule m, m = 0..Nm-1 (from isSpecieMolecular)
+        labelList molI_;
+
+        //- Unknowns eps_m = Y_m*e_v,m [J/kg] (Nm entries)
+        PtrList<volScalarField> epsVib_;
+
+        //- Vibrational energy per unit mass of molecule m, e_v,m [J/kg] (Nm, derived)
+        PtrList<volScalarField> evVib_;
+
+        //- Vibrational temperature per species [K] (Ns entries; atoms hold T_TR)
+        PtrList<volScalarField> TVibSpecies_;
+
+        //- (kappaVib_m/CvVib_m)/phi_m from kappaVibWilke [kg/m/s] (Nm),
+        //  computed once per outer iteration, used by residualsUpdate.H and vibEqns.H
+        PtrList<volScalarField> GVib_;
+
+        //- Species diffusive mass fluxes [kg/s] (Ns), shared by rhoE and vib equations
+        PtrList<surfaceScalarField> phiJ_;
+
+        //- Vibrational conduction face fluxes Gamma_e,m*snGrad(e_v,m)*|Sf| [W] (Nm)
+        PtrList<surfaceScalarField> qVib_;
+
+        //- Molecule face mass fractions from the species loop, state k (Nm)
+        PtrList<surfaceScalarField> YfMol_;
 
         //- Finite-rate chemistry. Constructed only when
         //  thermophysicalProperties 'chemistry' is true and Ns > 1.
@@ -201,6 +230,22 @@ protected:
         //  Called at initialisation and before every decode (energy-neutral chemistry in Phase 3).
         void updateEZero();
 
+        //- Vibrational temperature floor: fvSolution pseudoTime TMin (same as T_TR)
+        scalar vibTvMin() const;
+
+        //- Start-up: Tv_m -> e_v,m, eps_m (cells), then vibBoundaries()
+        void vibEncode();
+
+        //- After the vibrational solve: eps_m -> e_v,m, Tv_m (cells), then
+        //  vibBoundaries(). Returns the number of cells where a Tv_m hit the floor.
+        label vibDecode();
+
+        //- Faces from TVib_<m> BCs; atoms <- T_TR; mixture TVib; eVibMix_ = sum eps_m
+        void vibBoundaries();
+
+        //- Start-up checks (permanent): closed-form inverse matches the library's
+        //  EsVib (FatalError otherwise); report whether kappaVib/CvVib is Eucken-type
+        void vibCheckModel() const;
 public:
 
     //- Runtime type information

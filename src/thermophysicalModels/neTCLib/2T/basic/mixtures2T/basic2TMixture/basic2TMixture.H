@@ -258,6 +258,14 @@ public:
             << exit(FatalError); 
         return 0; 
     }
+
+    scalar CvVib(label, scalar, scalar, scalar, scalar) const override
+    {
+        FatalErrorInFunction
+            << "CvVib() called on pure mixture"
+            << exit(FatalError); 
+        return 0;
+    }
     // Constructors
 
         //- Construct from dictionary, mesh and phase name

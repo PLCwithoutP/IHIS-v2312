@@ -71,6 +71,59 @@ License
         );
         rhoER += fvc::div(sigmaDotU);
 
+        // Vibrational conduction.
+        //   GVib_m = (kappaVib_m/CvVib_m)/phi_m at T* = max(Tv_m, theta_m/20), state k
+        //   qVib_m = X_m*GVib_m*snGrad(e_v,m)*|Sf|   [W], shared with vibEqns.H
+        // Added here once, so it serves both the Ns > 1 and the Ns = 1 branch below.
+        if (twoT_)
+        {
+            const compositionInterface& comp = neThermo.composition();
+            const PtrList<volScalarField>& Yv = comp.Y();
+            const label Nm = molI_.size();
+
+            if (GVib_.size() != Nm) GVib_.setSize(Nm);
+            if (qVib_.size() != Nm) qVib_.setSize(Nm);
+
+            // 1/W = sum_s Y_s/W_s  (mixture molar mass, boundary included)
+            volScalarField invW("invW", Yv[0]/comp.W(0));
+            for (label s = 1; s < Yv.size(); ++s)
+            {
+                invW += Yv[s]/comp.W(s);
+            }
+
+            forAll(molI_, m)
+            {
+                const label s = molI_[m];
+                const scalar th = comp.thetaVib(s);
+
+                // T4.4b: evaluation temperature and Wilke-weighted conductance
+                const volScalarField TStar
+                (
+                    "TStar",
+                    max(TVibSpecies_[s], dimensionedScalar(dimTemperature, th/20))
+                );
+                GVib_.set(m, neThermo.kappaVibWilke(s, TStar).ptr());
+
+                // Mole fraction X_m = (Y_m/W_m)/(1/W); exactly 1 for Ns = 1
+                const volScalarField Xm("Xm", (Yv[s]/comp.W(s))/invW);
+
+                // T5.2: conduction face flux, Gamma_e,m = X_m*GVib_m
+                qVib_.set
+                (
+                    m,
+                    new surfaceScalarField
+                    (
+                        "qVib_" + comp.species()[s],
+                        fvc::interpolate(Xm*GVib_[m])
+                       *fvc::snGrad(evVib_[m])*mesh.magSf()
+                    )
+                );
+
+                // T5.3: into the total-energy residual, same sign as div(kappa grad T)
+                rhoER += fvc::surfaceIntegrate(qVib_[m]);
+            }
+        }
+
         volScalarField eCalc("eCalc", rhoE/rho-0.5*magSqr(U)); // prevent e inheriting BC from T in neThermo
         if (trhoD.valid())
         {
@@ -105,6 +158,13 @@ License
             hJ.setOriented(true);
             #endif
 
+            // Keep each species' face flux for the vibrational
+            // equations (D5: rhoE and e_v share the same phiJ)
+            if (twoT_ && phiJ_.size() != Ys.size())
+            {
+                phiJ_.setSize(Ys.size());
+            }
+
             // Face diffusive mass fluxes; last species closes sum_s phiJ_s = 0
             for (label s = 0; s < last; ++s)
             {
@@ -114,15 +174,29 @@ License
                 );
                 hJ += fvc::interpolate(hs[s])*phiJs;
                 phiJSum += phiJs;
+                if (twoT_)
+                {
+                    phiJ_.set(s, new surfaceScalarField("phiJ_" + Ys[s].name(), phiJs));
+                }
             }
             hJ -= fvc::interpolate(hs[last])*phiJSum;
+            
+            if (twoT_)
+            {
+                // Closure: phiJ_last = -sum_{s<last} phiJ_s, exactly as in hJ
+                phiJ_.set(last, new surfaceScalarField("phiJ_" + Ys[last].name(), -phiJSum));
+            }
 
             rhoER -= fvc::surfaceIntegrate(hJ);
         }
         else
         {
-            // Inviscid-free single species (Phase 2 path, unchanged)
             volScalarField eCalc("eCalc", rhoE/rho-0.5*magSqr(U)); // prevent e inheriting BC from T in neThermo
+            if (twoT_)
+            {
+                // 2T: conduct the TR part only; vibrational conduction is qVib_ above
+                eCalc -= eVibMix_();
+            }
             rhoER += fvc::laplacian(alphaLam, eCalc, "laplacian(alphaLam,e)");
         }
     }

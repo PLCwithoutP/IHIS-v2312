@@ -150,6 +150,16 @@ public:
         scalar thetaVib
     ) const = 0;
 
+    //- Vibrational heat capacity at constant volume of species speciei [J/kg/K]
+    virtual scalar CvVib
+    (
+        label speciei,
+        scalar p,
+        scalar TTR,
+        scalar TVib,
+        scalar ThetaVib
+    ) const = 0;
+
     virtual scalar alphah
     (
         label  speciei,
