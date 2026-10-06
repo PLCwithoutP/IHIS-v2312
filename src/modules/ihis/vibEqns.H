@@ -77,31 +77,35 @@ if (twoT_)
         tmp<surfaceScalarField> evf = surfaceFieldSelect(evL, evR, phi, 0.0);
         tmp<surfaceScalarField> epsUp = upwindEps.interpolate(eps);
 
-        // Implicit diffusivity on eps (stabiliser; cancels at convergence)
-        volScalarField GammaEps("GammaEps", GVib_[m]/(comp.W(s)*invW));
-        if (trhoD.valid())
-        {
-            GammaEps += trhoD();
-        }
-
-        // Physical face flux F_m = qVib_m - e_v,f * phiJ_s (D4, D5): same
-        // qVib_ and phiJ_ as the rhoE residual, linear e_v as interpolate(h_s)
-        surfaceScalarField Fm("Fm", qVib_[m]);
-        if (phiJ_.size())
-        {
-            Fm -= fvc::interpolate(ev)*phiJ_[s];
-        }
-
         fvScalarMatrix epsEqn
         (
             fvm::ddt(rho, eps) - fvm::Sp(ddtRho, eps)                 // real + pseudo time
           + fvm::div(phi, eps, "div(phi,epsVib)")                     // implicit upwind
           - fvm::Sp(divPhi, eps)                                      // advective-form pair
           + fvc::surfaceIntegrate(phi*(YfMol_[m]*evf() - epsUp()))    // deferred correction
-          - fvm::laplacian(GammaEps, eps, "laplacian(GammaEps,epsVib)")   // implicit
-          + fvc::laplacian(GammaEps, eps, "laplacian(GammaEps,epsVib)")   // same, at eps^k
-          - fvc::surfaceIntegrate(Fm)                                 // physical diffusion
         );
+
+        if (!inviscid_)
+        {
+            // Implicit diffusivity on eps (stabiliser; cancels at convergence)
+            volScalarField GammaEps("GammaEps", GVib_[m]/(comp.W(s)*invW));
+            if (trhoD.valid())
+            {
+                GammaEps += trhoD();
+            }
+
+            // Physical face flux F_m = qVib_m - e_v,f * phiJ_s (D4, D5): same
+            // qVib_ and phiJ_ as the rhoE residual, linear e_v as interpolate(h_s)
+            surfaceScalarField Fm("Fm", qVib_[m]);
+            if (phiJ_.size())
+            {
+                Fm -= fvc::interpolate(ev)*phiJ_[s];
+            }
+
+            epsEqn -= fvm::laplacian(GammaEps, eps, "laplacian(GammaEps,epsVib)");
+            epsEqn += fvc::laplacian(GammaEps, eps, "laplacian(GammaEps,epsVib)");
+            epsEqn -= fvc::surfaceIntegrate(Fm);
+        }
 
         epsEqn.solve(mesh.solverDict("epsVib"));
     }
