@@ -884,6 +884,14 @@ public:
             //- As above, for patch [J/m/s/K]
             virtual tmp<scalarField> kappaTRWilke(const label patchi) const;
 
+            //- Wilke-weighted vibrational conductance (kappaVib_s/CvVib_s)/phi_s [kg/m/s],
+            //  evaluated at the caller-supplied vibrational temperature TvEval
+            virtual tmp<volScalarField> kappaVibWilke
+            (
+                const label speciei,
+                const volScalarField& TvEval
+            ) const;
+   
             //- Vibrational thermal diffusivity for temperature of mixture [J/m/s/K]
             virtual tmp<volScalarField> kappaVib() const = 0;
 

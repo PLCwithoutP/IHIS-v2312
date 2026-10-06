@@ -216,7 +216,6 @@ void Foam::heNe2TReactionThermo<BasicNe2TThermo, MixtureType>::calculateVibEnerg
 )
 {
     const bool use2T = this->twoTemperature();
-    const scalar thetaVib_ = this->cellMixture(0).ThetaVib(); 
 
     scalarField& eVibCells = eVib.primitiveFieldRef();
 
@@ -224,20 +223,32 @@ void Foam::heNe2TReactionThermo<BasicNe2TThermo, MixtureType>::calculateVibEnerg
     const scalarField& TTRCells = TTR.primitiveField();
     const scalarField& TVibCells = TVib.primitiveField();
 
+    using mixingMixtureType = const typename MixtureType::basicSpecie2TMixture;
+    mixingMixtureType& mix = this->composition();
+    const PtrList<volScalarField>& Y = mix.Y();
+
+    if (use2T && Y.empty())
+    {
+        FatalErrorInFunction
+            << "Two-temperature requires a multi-component mixture "
+            << "(multiComponent2TMixture or neReactingMixture); "
+            << "pure mixtures are not supported." << nl
+            << exit(FatalError);
+    }
+
     forAll(TTRCells, celli)
     {
-        const typename MixtureType::thermoType& cellMixture_ =
-            this->cellMixture(celli);
-
         const scalar TVibUse = use2T ? TVibCells[celli] : TTRCells[celli];
 
-        eVibCells[celli] = cellMixture_.EV
-        (
-            pCells[celli],
-            TTRCells[celli],
-            TVibUse,
-            thetaVib_
-        );
+        scalar ev = 0;
+        forAll(Y, s)
+        {
+            ev += Y[s][celli]*mix.EsVib
+            (
+                s, pCells[celli], TTRCells[celli], TVibUse, mix.thetaVib(s)
+            );
+        }
+        eVibCells[celli] = ev;
     }
 
     const volScalarField::Boundary& pBf = p.boundaryField();
@@ -256,18 +267,17 @@ void Foam::heNe2TReactionThermo<BasicNe2TThermo, MixtureType>::calculateVibEnerg
         {
             forAll(pTTR, facei)
             {
-                const typename MixtureType::thermoType& cellMixture_ =
-                    this->patchFaceMixture(patchi, facei);
-
                 const scalar TVibUse = use2T ? pTVib[facei] : pTTR[facei];
 
-                pesVib[facei] = cellMixture_.EV
-                (
-                    pp[facei],
-                    pTTR[facei],
-                    TVibUse,
-                    thetaVib_
-                );
+                scalar ev = 0;
+                forAll(Y, s)
+                {
+                    ev += Y[s].boundaryField()[patchi][facei]*mix.EsVib
+                    (
+                        s, pp[facei], pTTR[facei], TVibUse, mix.thetaVib(s)
+                    );
+                }
+                pesVib[facei] = ev;
 
             }
         }
@@ -571,6 +581,85 @@ Foam::heNe2TReactionThermo<BasicNe2TThermo, MixtureType>::kappaTRWilke
     }
 
     return tK;
+}
+
+template<class BasicNe2TThermo, class MixtureType>
+Foam::tmp<Foam::volScalarField>
+Foam::heNe2TReactionThermo<BasicNe2TThermo, MixtureType>::kappaVibWilke
+(
+    const label speciei,
+    const volScalarField& TvEval
+) const
+{
+    using mixingMixtureType = const typename MixtureType::basicSpecie2TMixture;
+    mixingMixtureType& mixingComp = this->composition();
+
+    const fvMesh& mesh = this->TTR_.mesh();
+    const scalar th = mixingComp.thetaVib(speciei);
+
+    tmp<volScalarField> tG
+    (
+        new volScalarField
+        (
+            IOobject
+            (
+                "kappaVibWilke",
+                mesh.time().timeName(),
+                mesh,
+                IOobject::NO_READ,
+                IOobject::NO_WRITE,
+                IOobject::NO_REGISTER
+            ),
+            mesh,
+            dimensionedScalar("zero", dimMass/dimLength/dimTime, 0.0)  // (W/m/K)/(J/kg/K)
+        )
+    );
+    volScalarField& G = tG.ref();
+
+    WilkeMR<mixingMixtureType> wilkeMix(mixingComp);   // X refreshed in the constructor
+
+    // (kappaVib/CvVib) at (p, TTR, Tv); VSMALL guard never fires for Tv >= theta/20
+    auto ratio = [&](const scalar p, const scalar T, const scalar Tv)
+    {
+        return mixingComp.kappaVib(speciei, p, T, Tv, th)
+                /max(mixingComp.CvVib(speciei, p, T, Tv, th), VSMALL);
+    };
+
+    const scalarField& pCells   = this->p_.primitiveField();
+    const scalarField& TTRCells = this->TTR_.primitiveField();
+    const scalarField& TvCells  = TvEval.primitiveField();
+    scalarField& GCells         = G.primitiveFieldRef();
+
+    forAll(GCells, celli)
+    {
+        GCells[celli] =
+            ratio(pCells[celli], TTRCells[celli], TvCells[celli])
+            /wilkeMix.scalingFactor(speciei, celli, TTRCells[celli]);
+    }
+
+    // Coupled (processor) patches: exchange neighbour-cell values (as kappaTRWilke)
+    G.correctBoundaryConditions();
+
+    // Physical patches: face-cell composition, face p, TTR and Tv
+    volScalarField::Boundary& GBf = G.boundaryFieldRef();
+    forAll(GBf, patchi)
+    {
+        if (GBf[patchi].coupled()) continue;
+
+        const labelUList& fc  = mesh.boundary()[patchi].faceCells();
+        const scalarField& pp  = this->p_.boundaryField()[patchi];
+        const scalarField& pT  = this->TTR_.boundaryField()[patchi];
+        const scalarField& pTv = TvEval.boundaryField()[patchi];
+
+        forAll(GBf[patchi], facei)
+        {
+            GBf[patchi][facei] =
+                ratio(pp[facei], pT[facei], pTv[facei])
+                /wilkeMix.scalingFactor(speciei, fc[facei], pT[facei]);
+        }
+    }
+
+    return tG;
 }
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //

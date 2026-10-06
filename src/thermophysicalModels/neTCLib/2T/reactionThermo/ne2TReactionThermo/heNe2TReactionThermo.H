@@ -160,6 +160,14 @@ public:
             const PtrList<volScalarField::Internal>& RR
         );
         
+        //- Wilke-weighted vibrational conductance (kappaVib_s/CvVib_s)/phi_s [kg/m/s],
+        //  evaluated at the caller-supplied vibrational temperature TvEval
+        virtual tmp<volScalarField> kappaVibWilke
+        (
+            const label speciei,
+            const volScalarField& TvEval
+        ) const override;
+
         virtual scalar wilkeKappaAverage() const override;
         virtual scalar wilkeMuAverage() const;
         virtual Foam::volScalarField fickDiffusionCoeff() const;

@@ -1,6 +1,0 @@
-SOURCE = \
-shockRefinement/shockRefinement.C \
-writeFields/writeFields.C \
-writeCellNumbering/writeCellNumbering.C \
-
-# sources

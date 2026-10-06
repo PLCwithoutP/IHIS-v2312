@@ -206,6 +206,16 @@ public:
                 const scalar ThetaVib
             ) const override;
 
+            //- Vibrational heat capacity at constant volume [J/kg/K]
+            virtual scalar CvVib
+            (
+                const label speciei,
+                const scalar p,
+                const scalar TTR,
+                const scalar TVib,
+                const scalar ThetaVib
+            ) const override;
+   
             //- Thermal diffusivity of enthalpy [kg/m/s]
             virtual scalar alphah
             (

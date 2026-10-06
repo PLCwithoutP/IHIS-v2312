@@ -231,10 +231,10 @@ public:
                 #ifdef __clang__
                 // Using volatile to prevent compiler optimisations leading to
                 // a sigfpe
-                volatile const scalar tesVib = thermo2T.TEs_Vib(eVib, p, TVib0);
+                volatile const scalar tesVib = thermo2T.TEs_Vib(eVib, p, TVib0, TTR0);
                 return tesVib;
                 #else
-                return thermo2T.TEs_Vib(eVib, p, TTR0, TVib0);
+                return thermo2T.TEs_Vib(eVib, p, TVib0, TTR0);
                 #endif
             }
 };

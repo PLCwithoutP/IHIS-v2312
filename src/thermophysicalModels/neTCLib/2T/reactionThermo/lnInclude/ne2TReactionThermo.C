@@ -1,1 +1,0 @@
-../ne2TReactionThermo/ne2TReactionThermo.C

@@ -229,6 +229,18 @@ Foam::scalar Foam::Specie2TMixture<Mixture2TType>::kappaVib
     return this->getLocalThermo(speciei).kappaVib(p, TTR, TVib, ThetaVib);
 }
 
+template<class Mixture2TType>
+Foam::scalar Foam::Specie2TMixture<Mixture2TType>::CvVib
+(
+    const label speciei,
+    const scalar p,
+    const scalar TTR,
+    const scalar TVib,
+    const scalar ThetaVib
+) const
+{
+    return this->getLocalThermo(speciei).CvVib(p, TTR, TVib, ThetaVib);
+}
 
 template<class Mixture2TType>
 Foam::scalar Foam::Specie2TMixture<Mixture2TType>::alphah

@@ -1,1 +1,0 @@
-../chemistryInterface/neTCChemistry/neChemistrySolver/noNeChemistrySolver/noNeChemistrySolver.H

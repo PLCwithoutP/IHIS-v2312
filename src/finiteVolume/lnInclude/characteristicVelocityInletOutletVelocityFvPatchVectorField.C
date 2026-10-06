@@ -1,1 +1,0 @@
-../boundaryConditions/characteristic/characteristicVelocityInletOutlet/characteristicVelocityInletOutletVelocityFvPatchVectorField.C

@@ -925,4 +925,14 @@ Foam::basic2TThermo::kappaTRWilke(const label patchi) const
     return kappaTR(patchi);
 }
 
+Foam::tmp<Foam::volScalarField> Foam::basic2TThermo::kappaVibWilke
+(
+    const label,
+    const volScalarField&
+) const
+{
+    NotImplemented;
+    return tmp<volScalarField>(nullptr);
+}
+
 // ************************************************************************* //
