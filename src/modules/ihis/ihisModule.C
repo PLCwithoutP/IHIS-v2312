@@ -898,6 +898,11 @@ void ihisModule::outerIteration()
     #include "speciesEqns.H"
 
     #include "vibEqns.H" 
+    
+    // Update fields
+    #include "updateFields.H"
+    Info<< "min(rho) = " << gMin(rho.primitiveField())
+        << ", min(TTR) = " << gMin(neThermo.TTR().primitiveField()) << endl;
 
     // TEMPORARY (Phase 5, removed in T9.7): vibrational consistency probes.
     // T8.1  harmonic-oscillator round trip on the actual fields
@@ -962,12 +967,6 @@ void ihisModule::outerIteration()
             << ", TR inversion = " << errInv
             << ", energy partition = " << errPart << endl;
     }
-    
-    // Update fields
-    #include "updateFields.H"
-    Info<< "min(rho) = " << gMin(rho.primitiveField())
-        << ", min(TTR) = " << gMin(neThermo.TTR().primitiveField()) << endl;
-
 }
 
 void ihisModule::updateEZero()

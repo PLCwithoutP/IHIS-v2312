@@ -422,6 +422,9 @@ void ihisModule::vibCheckModel() const
     const compositionInterface& comp = pThermo_->composition();
     const scalar p = 1e5;                                  // perfect gas: p-independent
     const scalarList Tcheck({50, 300, 3000, 20000});
+    
+    const scalar TvMin = vibTvMin();
+    const scalar xMax  = 600;    // exp(x) overflows at x = 709.8; keep a margin
 
     Info<< "IHIS: vibrational model checks" << nl;
 
@@ -431,6 +434,18 @@ void ihisModule::vibCheckModel() const
         const word& sName = comp.species()[s];
         const scalar th = comp.thetaVib(s);
         const scalar R  = constant::thermodynamic::RR/comp.W(s);
+
+        // (0) Floor safety: EsVib evaluates exp(theta_v/Tv), which overflows
+        //     (SIGFPE) for Tv < theta_v/709.8. TvMin must stay above that.
+        if (th/TvMin > xMax)
+        {
+            FatalErrorInFunction
+                << "pseudoTime TMin = " << TvMin << " K is too low for 2T: "
+                << "exp(theta_v/Tv) overflows in EsVib for " << sName
+                << " below " << th/xMax << " K." << nl
+                << "    Set TMin in system/fvSolution pseudoTime"
+                << " (IHIS default 10 K)." << exit(FatalError);
+        }
 
         // (1) Round trip Tv -> EsVib -> TvHO -> Tv (guards the closed-form assumption)
         scalar maxErr = 0;
