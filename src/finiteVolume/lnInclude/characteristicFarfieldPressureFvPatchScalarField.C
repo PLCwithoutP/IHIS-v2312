@@ -1,1 +1,0 @@
-../boundaryConditions/characteristic/characteristicFarfield/characteristicFarfieldPressureFvPatchScalarField.C

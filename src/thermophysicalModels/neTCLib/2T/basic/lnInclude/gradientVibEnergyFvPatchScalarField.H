@@ -1,1 +1,0 @@
-../derivedFv2TPatchFields/gradientVibEnergy/gradientVibEnergyFvPatchScalarField.H

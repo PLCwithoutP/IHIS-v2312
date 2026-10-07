@@ -1,1 +1,0 @@
-../boundaryConditions/characteristic/characteristicBase.H

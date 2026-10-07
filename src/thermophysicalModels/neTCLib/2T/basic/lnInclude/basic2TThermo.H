@@ -1,1 +1,0 @@
-../basic2TThermo/basic2TThermo.H

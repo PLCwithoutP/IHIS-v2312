@@ -1,5 +1,0 @@
-SOURCE = \
-preconditioner/preconditioner.C \
-lusgs/lusgs.C \
-
-# sources

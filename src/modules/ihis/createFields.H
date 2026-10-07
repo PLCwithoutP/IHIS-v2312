@@ -193,6 +193,8 @@ if (twoT_)
         Info<< ' ' << comp.species()[molI_[m]];
     }
 
+    Info << nl;
+
     // Per-species vibrational temperature, Ns entries in species order
     // (the layout the V-T/V-V sources expect).
     // Molecules: TVib_<name>, read if present (restart), otherwise a copy of the
@@ -349,9 +351,9 @@ if (twoT_)
         );
     }
 
-    Info<< nl << endl;
 }
 
+Info<< nl << endl;
 
 eVibMix_.reset
 (

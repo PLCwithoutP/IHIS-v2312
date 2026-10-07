@@ -410,6 +410,21 @@ label gmres<nScalar, nVector>::solve
         }
         reduce(beta, sumOp<scalar>(), Pstream::msgType(), UPstream::worldComm, reduceRequest[0]);
 
+        // Zero initial residual (e.g. a sealed, uniform single cell: R == 0
+        // exactly). Delta U = 0 is then the exact solution, and the Arnoldi
+        // normalisation below would divide by ||r_0|| = 0. Complete the
+        // reduction first so every processor tests the same global beta,
+        // then leave through the same exit as the convergence break above.
+        if (Pstream::parRun() && reduceRequest[0] != -1)
+        {
+            Pstream::waitRequest(reduceRequest[0]);
+            reduceRequest[0] = -1;
+        }
+        if (beta <= VSMALL)
+        {
+            break;
+        }
+
         // Set initial rhs and bh[0] = beta
         bh = 0;
 

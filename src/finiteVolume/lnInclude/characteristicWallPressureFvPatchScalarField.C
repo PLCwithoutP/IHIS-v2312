@@ -1,1 +1,0 @@
-../boundaryConditions/characteristic/characteristicWall/characteristicWallPressureFvPatchScalarField.C

@@ -1,1 +1,0 @@
-../boundaryConditions/constraint/coupledSymmetry/coupledSymmetryFvPatchVectorField.H

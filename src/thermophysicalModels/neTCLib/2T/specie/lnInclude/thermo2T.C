@@ -1,1 +1,0 @@
-../thermo/thermo2T/thermo2T.C

@@ -375,14 +375,31 @@ void ihisModule::initialise()
                 pseudoCoNum_()
             )
         );
-        pseudoCoDamping_.reset
+        // Local damping is part of the pseudo-time state: write it and read it
+        // back on restart. Rebuilding it as pseudoCoField/pseudoCoNum (stock
+        // HiSA) mixes pseudoCoField from before the last damping/CFL update
+        // with pseudoCoNum from after it, so a restart starts one update off.
+        IOobject dampIO
         (
-            new volScalarField
-            (
-                "pseudoCoDamping",
-                pseudoCoField_()/pseudoCoNum_()
-            )
+            "pseudoCoDamping",
+            runTime.timeName(),
+            mesh,
+            IOobject::READ_IF_PRESENT,
+            IOobject::AUTO_WRITE
         );
+
+        if (dampIO.typeHeaderOk<volScalarField>(true))
+        {
+            pseudoCoDamping_.reset(new volScalarField(dampIO, mesh));
+        }
+        else
+        {
+            dampIO.readOpt(IOobject::NO_READ);
+            pseudoCoDamping_.reset
+            (
+                new volScalarField(dampIO, pseudoCoField_()/pseudoCoNum_())
+            );
+        }
 
         scalar totCells = mesh.globalData().nTotalCells();
         Info<< "Initial pseudo Courant No: "
@@ -904,69 +921,6 @@ void ihisModule::outerIteration()
     Info<< "min(rho) = " << gMin(rho.primitiveField())
         << ", min(TTR) = " << gMin(neThermo.TTR().primitiveField()) << endl;
 
-    // TEMPORARY (Phase 5, removed in T9.7): vibrational consistency probes.
-    // T8.1  harmonic-oscillator round trip on the actual fields
-    // T8.2  thermo eVib (per-species, after N2) at the mixture Tv  vs  sum_m eps_m
-    // T8.3  TR inversion and energy partition after the decode
-    if (twoT_)
-    {
-        const compositionInterface& comp = neThermo.composition();
-        const PtrList<volScalarField>& Yv = comp.Y();
-        const scalarField& pI = neThermo.p().primitiveField();
-        const scalarField& TI = neThermo.TTR().primitiveField();
-        const scalar TvMin = vibTvMin();
-
-        // T8.1: max |EsVib(Tv_m) - e_v,m| / e_v,m over present, unfloored molecules
-        scalar errHO = 0;
-        forAll(molI_, m)
-        {
-            const label s = molI_[m];
-            const scalar th = comp.thetaVib(s);
-            const scalarField& evI = evVib_[m].primitiveField();
-            const scalarField& TvI = TVibSpecies_[s].primitiveField();
-            const scalarField& YI  = Yv[s].primitiveField();
-
-            forAll(evI, celli)
-            {
-                if (YI[celli] >= 1e-10 && evI[celli] > VSMALL && TvI[celli] > TvMin)
-                {
-                    errHO = max
-                    (
-                        errHO,
-                        mag(comp.EsVib(s, pI[celli], TI[celli], TvI[celli], th) - evI[celli])
-                    /evI[celli]
-                    );
-                }
-            }
-        }
-        reduce(errHO, maxOp<scalar>());
-
-        // T8.2: thermo's own e_v at the mixture Tv must equal sum_m eps_m (D1 + N2)
-        neThermo.correctVibEnergy();
-        const scalarField& eVth  = neThermo.eVib().primitiveField();      // accessor
-        const scalarField& eVmix = eVibMix_().primitiveField();
-        const scalar errMix =
-            gMax(mag(eVth - eVmix)())/max(gMax(mag(eVmix)()), VSMALL);
-
-        // T8.3: TR inversion (e vs e_TR(p, T)) and energy partition of rhoE
-        const tmp<volScalarField> teCheck = neThermo.eTR(p, T);
-        const scalarField& eI = e.primitiveField();
-        const scalar errInv =
-            gMax(mag(eI - teCheck().primitiveField())())/max(gMax(mag(eI)()), VSMALL);
-
-        const scalarField Eint
-        (
-            rhoE.primitiveField()/rho.primitiveField() - 0.5*magSqr(U.primitiveField())
-        );
-        const scalar errPart =
-            gMax(mag(Eint - (eI - eZero_().primitiveField() + eVmix))())
-        /max(gMax(mag(Eint)()), VSMALL);
-
-        Info<< "Phase5Probe: HO round trip = " << errHO
-            << ", thermo eVib vs sum eps = " << errMix
-            << ", TR inversion = " << errInv
-            << ", energy partition = " << errPart << endl;
-    }
 }
 
 void ihisModule::updateEZero()
