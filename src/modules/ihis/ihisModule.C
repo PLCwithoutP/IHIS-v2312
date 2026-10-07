@@ -920,7 +920,8 @@ void ihisModule::outerIteration()
     #include "updateFields.H"
     Info<< "min(rho) = " << gMin(rho.primitiveField())
         << ", min(TTR) = " << gMin(neThermo.TTR().primitiveField()) << endl;
-
+    #include "phase6Probe.H"   // PHASE6-TEMP T7.1
+    
 }
 
 void ihisModule::updateEZero()

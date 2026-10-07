@@ -72,6 +72,10 @@ private:
     const speciesTable& names_;
     PtrList<volScalarField> Q_VVList_;
 
+    //- nu_m = sum_{l != m} N_A sigma_ml P_ml cbar_ml n_l [1/s], so that
+    //  dQ_VV,m/d(rho_m e_v,m) = -nu_m (implicit diagonal for IHIS)
+    PtrList<volScalarField> nuVVList_;
+    
     const scalar boltzmann_const_; // Boltzmann constant
     const scalar avagadro_const_; // Avagadro constant
     // Per species-pair Knab coefficients [nSpec x nSpec]
@@ -183,7 +187,8 @@ public:
             const scalar TTR,
             const PtrList<volScalarField>& TVibSpecies,
             const label s,
-            const label celli
+            const label celli,
+            scalar& nu              // out: nu_s [1/s]
         );
 
         PtrList<volScalarField>& correctVibVibSource
@@ -201,6 +206,11 @@ public:
         const PtrList<volScalarField>& fields() const
         {
             return Q_VVList_;
+        }
+
+        const PtrList<volScalarField>& nuFields() const
+        {
+            return nuVVList_;
         }
 };
 

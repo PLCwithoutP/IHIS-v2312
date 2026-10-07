@@ -100,11 +100,12 @@ public:
             return "VTEnergySource";
         }
 
-        void makeQVibSourceFields
-        (
-            const fvMesh& mesh
-        );
+        //- Build the Q_VT_<Y> fields (AUTO_WRITE). Only correctVibSource fills them.
+        void makeQVTFields(const fvMesh& mesh);
 
+        //- Build the tau_VT_<Y> fields (NO_WRITE). Only correctVTRelaxationTime fills them.
+        void makeTauFields(const fvMesh& mesh);
+        
         label nSpecies() const 
         { 
             return names_.size(); 

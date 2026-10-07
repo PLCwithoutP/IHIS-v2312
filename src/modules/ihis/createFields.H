@@ -145,25 +145,24 @@ if
 }
 
 // Two-temperature (Phase 5): one transported vibrational energy per molecule,
-// frozen (no V-T, V-V or C-V sources until Phase 6). IHIS owns the vibrational
+// V–T, V–V and C–V sources are added point-implicitly in vibEqns.H . IHIS owns the vibrational
 // state; the thermo only receives the mixture TVib (D1). All cases use a
 // multi-component mixture, so Y() is never empty (the thermo enforces this in 2T).
 twoT_ = neThermo.twoTemperature();
 
 if (twoT_)
 {
-    // Gate on the switch, not on chemistry_: chemistry_ is built only for
-    // Ns > 1, so a single-species 2T case with chemistry true would slip through.
-    if (neThermo.getOrDefault<bool>("chemistry", false))
+    // A 2T case with chemistry on needs the chemistry model; chemistry_ is
+    // built only for Ns > 1 (Phase 4 D7), so a pure-gas case would silently
+    // run frozen.
+    if (neThermo.getOrDefault<bool>("chemistry", false) && !chemistry_)
     {
         FatalErrorInFunction
-            << "twoTemperature and chemistry are both true." << nl
-            << "    Finite-rate chemistry in 2T (Park T_ctrl, d(omega)/dTv,"
-            << " C-V coupling) arrives in Phase 6; set chemistry false for"
-            << " 2T runs."
+            << "chemistry is true but the mixture has a single species:"
+            << " there is nothing to react." << nl
+            << "    Set chemistry false or add the product species."
             << exit(FatalError);
     }
-
     const compositionInterface& comp = neThermo.composition();
     const PtrList<volScalarField>& Ys = comp.Y();
 
@@ -194,6 +193,75 @@ if (twoT_)
     }
 
     Info << nl;
+
+    // C-V settings. Read IHIS-side: the library correctCVSource
+    // uses the mixture TVib and is never called by IHIS.
+    if (chemistry_)
+    {
+        const word cvTreatment(neThermo.get<word>("CVTreatment"));
+
+        if (cvTreatment == "preferential")
+        {
+            cvPreferential_ = true;
+        }
+        else if (cvTreatment != "non-preferential")
+        {
+            FatalIOErrorInFunction(neThermo)
+                << "CVTreatment '" << cvTreatment << "' unknown." << nl
+                << "    Valid: preferential, non-preferential"
+                << exit(FatalIOError);
+        }
+
+        alphaCV_ = neThermo.getOrDefault<scalar>("alphaDissociation", 0.3);
+
+        DVib_.setSize(molI_.size(), Zero);
+
+        if (cvPreferential_)
+        {
+            const IOdictionary speciesDict
+            (
+                IOobject
+                (
+                    "speciesDict",
+                    mesh.time().constant(),
+                    mesh,
+                    IOobject::MUST_READ,
+                    IOobject::NO_WRITE,
+                    IOobject::NO_REGISTER
+                )
+            );
+
+            forAll(molI_, m)
+            {
+                const word& name = comp.species()[molI_[m]];
+                DVib_[m] =
+                    speciesDict.subDict(name).get<scalar>("dissociationPotential");
+
+                // Units guard: J/kg expected (N2 ~3.36e7). Catches eV or J/mol data.
+                if (DVib_[m] < 1e6 || DVib_[m] > 1e8)
+                {
+                    FatalErrorInFunction
+                        << "dissociationPotential of " << name << " = "
+                        << DVib_[m] << " is outside 1e6-1e8 J/kg." << nl
+                        << "    Give D/W in J/kg (N2: 3.36e7)."
+                        << exit(FatalError);
+                }
+            }
+        }
+
+        Info<< "IHIS: 2T chemistry active, C-V " << cvTreatment;
+        if (cvPreferential_)
+        {
+            Info<< " (alpha = " << alphaCV_ << "): alpha*D =";
+            forAll(molI_, m)
+            {
+                Info<< ' ' << comp.species()[molI_[m]] << ' '
+                    << alphaCV_*DVib_[m];
+            }
+            Info<< " J/kg";
+        }
+        Info<< nl;
+    }
 
     // Per-species vibrational temperature, Ns entries in species order
     // (the layout the V-T/V-V sources expect).

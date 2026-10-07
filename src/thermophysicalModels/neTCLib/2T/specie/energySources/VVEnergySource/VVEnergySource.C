@@ -68,6 +68,7 @@ void Foam::VVEnergySource<MixtureType, MixingRuleType>::makeQVibSourceFields
 
     const PtrList<volScalarField>& Y_species = mix_.Y();
     Q_VVList_.setSize(Y_species.size());
+    nuVVList_.setSize(Y_species.size());
 
     forAll(Y_species, i)
     {
@@ -95,6 +96,24 @@ void Foam::VVEnergySource<MixtureType, MixingRuleType>::makeQVibSourceFields
                     dimEnergy/dimVolume/dimTime,
                     0.0
                 )
+            )
+        );
+
+        nuVVList_.set
+        (
+            i,
+            new volScalarField
+            (
+                IOobject
+                (
+                    "nu_VV_" + Y_species[i].name(),
+                    mesh.time().timeName(),
+                    mesh,
+                    IOobject::NO_READ,
+                    IOobject::NO_WRITE
+                ),
+                mesh,
+                dimensionedScalar(dimless/dimTime, Zero)
             )
         );
     }
@@ -165,10 +184,12 @@ Foam::VVEnergySource<MixtureType, MixingRule>::Q_VV_s
     const scalar TTR,
     const PtrList<volScalarField>& TVibSpecies,
     const label  s,      
-    const label  celli
+    const label  celli,
+    scalar& nu
 )
 {
     scalar Qm = 0.0;
+    nu = 0.0;
 
     const label nSpec = mix_.Y().size();
 
@@ -231,6 +252,10 @@ Foam::VVEnergySource<MixtureType, MixingRule>::Q_VV_s
           * velFactor
           * rho_m
           * energyBracket;
+        
+        // Same factors as Qm without rho_m and the energy bracket:
+        // the bracket is linear in e_v,m, so dQm/d(rho_m e_v,m) = -nu
+        nu += avagadro_const_*sigma_ml*P_ml*velFactor;
     }
 
     return Qm;   
@@ -353,6 +378,8 @@ Foam::VVEnergySource<MixtureType, MixingRule>::correctVibVibSource
     forAll(Y_species, m)
     {
         scalarField& Q_VV_Cells = Q_VVList_[m].primitiveFieldRef();
+        
+        scalarField& nuCells = nuVVList_[m].primitiveFieldRef();
 
         forAll(TTRCells, celli)
         {
@@ -365,7 +392,8 @@ Foam::VVEnergySource<MixtureType, MixingRule>::correctVibVibSource
                 TTRCell,
                 TVibSpecies,
                 m,
-                celli
+                celli,
+                nuCells[celli]
             );
         }
 

@@ -892,6 +892,14 @@ public:
                 const volScalarField& TvEval
             ) const;
    
+            //- V-V collision frequency nu_s [1/s] per species, valid after
+            //  correctVibVibSource(TVibSpecies) in the same iteration
+            virtual const PtrList<volScalarField>& vibVibFrequency()
+            {
+                NotImplemented;
+                return correctVibVibSource();   // never reached
+            }
+
             //- Vibrational thermal diffusivity for temperature of mixture [J/m/s/K]
             virtual tmp<volScalarField> kappaVib() const = 0;
 

@@ -60,7 +60,30 @@ class heNe2TReactionThermo
 :
     public he2TThermo<basicNe2TThermo, MixtureType>
 {
+    // Private Data
+
+    //- Mixture type the energy sources and their Wilke rule work on
+    typedef typename MixtureType::basicSpecie2TMixture energyMixtureType;
+
+    //- Wilke mixing rule shared by all energy sources
+    typedef WilkeMR<energyMixtureType> energyMixingRule;
+
+    //- Shared Wilke rule. Declared FIRST: members are destroyed in reverse
+    //  order, so it outlives the sources that hold a reference to it.
+    autoPtr<energyMixingRule> energyWilke_;
+
+    //- Energy-exchange sources, built once on first use (initEnergySources)
+    autoPtr<VTEnergySource<energyMixtureType, energyMixingRule>> vtSource_;
+    autoPtr<VVEnergySource<energyMixtureType, energyMixingRule>> vvSource_;
+    autoPtr<CVEnergySource<energyMixtureType, energyMixingRule>> cvSource_;
+
+    //- Returned by the source accessors in 1T (replaces the static lists)
+    PtrList<volScalarField> emptySourceList_;
+
     // Private Member Functions
+
+        //- Build energyWilke_ and the VT/VV/CV sources once
+        void initEnergySources();
 
         //- Calculate the thermo variables
         void calculate
@@ -153,6 +176,8 @@ public:
         (
             const PtrList<volScalarField>& TVibSpecies
         );
+        virtual const PtrList<volScalarField>& vibVibFrequency();
+        
         PtrList<volScalarField>& correctVTRelaxationTime();
         
         PtrList<volScalarField>& correctCVSource

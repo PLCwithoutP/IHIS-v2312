@@ -79,6 +79,8 @@
                 scalarField& esI = es[i];
                 const scalarField& YI = Y[i].primitiveField();
                 const scalar Hci = comp.Hc(i);
+                // 2T: EsT is the TR energy only (TR-only Cp data, A8), so dT/dY
+                // below is dT_TR/dY_s at fixed rhoE AND fixed eps_m 
                 forAll(esI, celli)
                 {
                     esI[celli] = comp.EsT(i, pI[celli], TI[celli]) + Hci;

@@ -110,6 +110,11 @@ protected:
         //- Two-temperature active (= neThermo.twoTemperature(), set in createFields.H)
         bool twoT_ = false;
 
+        //- C-V settings (Phase 6, D4), read when twoT_ && chemistry_
+        bool cvPreferential_ = false;
+        scalar alphaCV_ = 0.3;
+        scalarList DVib_;     // dissociation potential per molecule [J/kg]
+        
         //- Species index of molecule m, m = 0..Nm-1 (from isSpecieMolecular)
         labelList molI_;
 

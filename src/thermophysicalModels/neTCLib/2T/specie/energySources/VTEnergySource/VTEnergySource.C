@@ -132,28 +132,18 @@ void Foam::VTEnergySource<MixtureType, MixingRule>::loadMWCoeffs
 }
 
 template<class MixtureType, class MixingRuleType>
-void Foam::VTEnergySource<MixtureType, MixingRuleType>::makeQVibSourceFields
+void Foam::VTEnergySource<MixtureType, MixingRuleType>::makeQVTFields
 (
     const fvMesh& mesh
 )
 {
-    if (Q_VTList_.size() || tauVTList_.size())
-    {
-        // already built
-        return;
-    }
+    if (Q_VTList_.size()) return;   // already built (own guard, independent of tau)
 
     const PtrList<volScalarField>& Y_species = mix_.Y();
     Q_VTList_.setSize(Y_species.size());
-    tauVTList_.setSize(Y_species.size());
 
     forAll(Y_species, i)
     {
-        const volScalarField& Yi = Y_species[i];
-
-        const word fieldName("Q_VT_" + Yi.name());
-        const word fieldNameTau("tau_VT_" + Yi.name());
-
         Q_VTList_.set
         (
             i,
@@ -161,21 +151,33 @@ void Foam::VTEnergySource<MixtureType, MixingRuleType>::makeQVibSourceFields
             (
                 IOobject
                 (
-                    fieldName,
+                    "Q_VT_" + Y_species[i].name(),
                     mesh.time().timeName(),
                     mesh,
                     IOobject::NO_READ,
                     IOobject::AUTO_WRITE
                 ),
                 mesh,
-                dimensionedScalar
-                (
-                    "zero",
-                    dimEnergy/dimVolume/dimTime,
-                    0.0
-                )
+                dimensionedScalar(dimEnergy/dimVolume/dimTime, Zero)
             )
         );
+    }
+}
+
+
+template<class MixtureType, class MixingRuleType>
+void Foam::VTEnergySource<MixtureType, MixingRuleType>::makeTauFields
+(
+    const fvMesh& mesh
+)
+{
+    if (tauVTList_.size()) return;  // already built
+
+    const PtrList<volScalarField>& Y_species = mix_.Y();
+    tauVTList_.setSize(Y_species.size());
+
+    forAll(Y_species, i)
+    {
         tauVTList_.set
         (
             i,
@@ -183,19 +185,14 @@ void Foam::VTEnergySource<MixtureType, MixingRuleType>::makeQVibSourceFields
             (
                 IOobject
                 (
-                    fieldNameTau,
+                    "tau_VT_" + Y_species[i].name(),
                     mesh.time().timeName(),
                     mesh,
                     IOobject::NO_READ,
-                    IOobject::NO_WRITE   // or AUTO_WRITE if you want to write them
+                    IOobject::NO_WRITE
                 ),
                 mesh,
-                dimensionedScalar
-                (
-                    "zero",
-                    dimTime,  // [s] – relaxation time
-                    0.0
-                )
+                dimensionedScalar(dimTime, Zero)
             )
         );
     }
@@ -456,7 +453,7 @@ Foam::VTEnergySource<MixtureType, MixingRule>::correctVibSource
     const PtrList<volScalarField>& TVibSpecies
 )
 {
-    makeQVibSourceFields(TTR.mesh());
+    makeQVTFields(TTR.mesh());
     loadMWCoeffs(TTR.mesh());
 
     mr_.precomputeXi();
@@ -494,7 +491,7 @@ Foam::VTEnergySource<MixtureType, MixingRule>::correctVTRelaxationTime
     const volScalarField& TTR
 )
 {
-    makeQVibSourceFields(TTR.mesh());
+    makeTauFields(TTR.mesh());
     loadMWCoeffs(TTR.mesh());
     mr_.precomputeXi(); 
     
