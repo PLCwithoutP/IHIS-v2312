@@ -85,8 +85,6 @@ if (twoT_)
     scalarList QmaxVV(molI_.size(), Zero);
     scalarList QmaxCV(molI_.size(), Zero);
 
-    scalarField sumQVV(rhoI.size(), Zero);   // PHASE6-TEMP T7.3
-
     // (d) One equation per molecule
     forAll(molI_, m)
     {
@@ -182,7 +180,6 @@ if (twoT_)
                 forAll(QI, c)
                 {
                     QI[c] += QvvI[c];
-                    sumQVV[c] += QvvI[c];   // PHASE6-TEMP T7.3
                     aI[c] -= rhoI[c]*nuI[c];
                     QmaxVV[m] = max(QmaxVV[m], mag(QvvI[c]));
                 }
@@ -258,10 +255,6 @@ if (twoT_)
             << returnReduce(QmaxCV[m], maxOp<scalar>());
     }
     Info<< endl;
-    if (QVVp)   // PHASE6-TEMP T7.3: sum_m Q_VV,m -> 0 at the plateau, not identically
-    {
-        Info<< "T7.3: max|sum_m QVV| = " << gMax(mag(sumQVV))
-            << ", max_m max|QVV| = " << gMax(QmaxVV) << endl;
-    }
+
     Info<< endl;
 }
