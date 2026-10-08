@@ -1,0 +1,75 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2312                                  |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+FoamFile
+{
+    version         2;
+    format          ascii;
+    class           dictionary;
+    object          speciesDict;
+}
+
+species         ( N2 );
+
+N2
+{
+    elements
+    {
+        N               2;
+    }
+    specie
+    {
+        molWeight       28.0134;
+        type            molecular;
+    }
+    thermodynamics
+    {
+        TAbsLow         10;
+        TAbsHigh        30000;
+        TFirstInt       1000;
+        TSecondInt      6000;
+        ThetaVibrational 3371;
+        highCpCoeffs    ( 0 0 3.5 0 0 0 0 -1043.52 0 );
+        midCpCoeffs     ( 0 0 3.5 0 0 0 0 -1043.52 0 );
+        lowCpCoeffs     ( 0 0 3.5 0 0 0 0 -1043.52 0 );
+    }
+    transport
+    {
+        AB              0.027321;
+        BB              0.24321;
+        CB              -10.805;
+    }
+    dissociationPotential 3.36e+07;
+}
+
+KnabVVCoefficients
+{
+    default
+    {
+        sigma12         1.5e-18;
+        P21             0.01;
+    }
+    N2_O2
+    {
+        sigma12         2.667e-19;
+        P21             0.01;
+    }
+    N2_NO
+    {
+        sigma12         2.751e-19;
+        P21             0.01;
+    }
+    O2_NO
+    {
+        sigma12         2.686e-19;
+        P21             0.01;
+    }
+}
+
+
+// ************************************************************************* //

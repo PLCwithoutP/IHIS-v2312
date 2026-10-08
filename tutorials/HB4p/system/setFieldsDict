@@ -1,0 +1,42 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      setFieldsDict;
+}
+
+defaultFieldValues
+(
+    // --- RIGHT state (x > 0)
+    volVectorFieldValue U     (0 0 0)
+
+    volScalarFieldValue p     10000      // example Sod right pressure
+    volScalarFieldValue TTR   240
+    volScalarFieldValue TVib  240
+
+    volScalarFieldValue Y_N2  0
+    volScalarFieldValue Y_O2  1
+);
+
+regions
+(
+    boxToCell
+    {
+        // --- LEFT half: x in [-5, 0]
+        box (-5 -1 -1) (0 1 1);
+
+        fieldValues
+        (
+            volVectorFieldValue U     (0 0 0)
+
+            volScalarFieldValue p     100000     // example Sod left pressure
+            volScalarFieldValue TTR   300
+            volScalarFieldValue TVib  300
+
+            volScalarFieldValue Y_N2  1
+            volScalarFieldValue Y_O2  0
+        );
+    }
+);
+

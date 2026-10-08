@@ -1,0 +1,73 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2312                                  |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+FoamFile
+{
+    version         2;
+    format          ascii;
+    class           dictionary;
+    object          controlDict;
+}
+
+libs            ( "libneTCLib_2T.so" );
+
+application     ihis;
+
+startFrom       latestTime;
+
+startTime       0;
+
+stopAt          endTime;
+
+endTime         1e-05;
+
+deltaT          1e-09;
+
+writeControl    timeStep;
+
+writeInterval   100;
+
+purgeWrite      0;
+
+writeFormat     ascii;
+
+writePrecision  17;
+
+writeCompression off;
+
+timeFormat      general;
+
+timePrecision   10;
+
+graphFormat     raw;
+
+runTimeModifiable true;
+
+adjustTimeStep  no;
+
+maxCo           0.2;
+
+maxDeltaT       0.01;
+
+functions
+{
+    hbState
+    {
+        type            volFieldValue;
+        libs            ( fieldFunctionObjects );
+        writeControl    timeStep;
+        writeInterval   1;
+        writeFields     false;
+        regionType      all;
+        operation       volAverage;
+        fields          ( TTR TVib TVib_N2 Y_N2 Y_N p );
+    }
+}
+
+
+// ************************************************************************* //

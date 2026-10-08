@@ -1,0 +1,31 @@
+
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      sampleDict;
+}
+
+type            sets;
+libs            (sampling);
+setFormat           csv;        // outputs .csv files
+interpolationScheme cellPoint;  // smoother than "cell" for plotting
+
+sets
+(
+    xLine
+    {
+        type    uniform;
+        axis    x;
+
+        // adjust these to your 1D domain and y/z location
+        start   (-5 0 0);
+        end     (5 0 0);
+
+        nPoints 100;  // match the paper's 400 cells (or increase for smoother line)
+    }
+);
+
+fields (U); // add rho, T, Y1, Y2 etc if you want
+

@@ -1,0 +1,331 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2512                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      reactionsDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+//
+// Park 5-species air, 17 reversible reactions.
+//
+// Backward rates are NOT tabulated. neReversibleReaction evaluates
+//     k_b(T) = k_f(T) / Keq(T)
+// at runtime, in log space, with T = TTR (never the Park rate-controlling
+// temperature). This makes forward and backward rates thermodynamically
+// consistent by construction.
+//
+// Keq curve fit
+// -------------
+//     ln Keq = A1 + A2*Z + A3*Z^2 + A4*Z^3 + A5*Z^4,   Z = 10000/T
+// with Keq in mol/cm^3 (converted internally to (kmol/m^3)^dn).
+// Coefficients A1..A5 and the reaction energies are from
+//     C. Park, "On convergence of computation of chemically reacting flows",
+//     AIAA-85-0247 (1985), Table 1.
+//
+// KeqTheta = reaction energy / R, in K, from the same table:
+//     O2 = 2O      117.98 kcal/mol ->  59369.9 K
+//     N2 = 2N      225.00 kcal/mol -> 113224.4 K
+//     NO = N + O   150.03 kcal/mol ->  75498.1 K
+//     NO + O ...    32.05 kcal/mol ->  16128.2 K
+//     N2 + O ...    74.97 kcal/mol ->  37726.4 K
+//
+// KeqTmin: the quartic fit is a high-temperature correlation and diverges
+// below roughly 1500 K. Below KeqTmin the solver substitutes the correct
+// asymptote ln Keq = alpha - KeqTheta/T, matched to the fit at KeqTmin.
+// Verified against statistical mechanics in validate_Keq.py; the
+// continuation is accurate to better than a factor of 5 down to 300 K,
+// against an error of e^3754 for the raw fit at that temperature.
+//
+// The third body cancels out of Keq, so all five reactions of a dissociation
+// family share one set of Keq inputs. Any typo therefore shows up as one
+// entry disagreeing with four identical siblings.
+//
+// twoTemperature: MUST be true for alphaPark to have any effect. Without it
+// controllingTemperature() returns TTR and the Park coupling is inert.
+//
+// Forward Arrhenius A, beta, Ta are unchanged from the previous mechanism.
+// Units: A in m^3/(kmol s), i.e. Park's cm^3/(mol s) divided by 1000.
+//
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+species
+(
+    N2
+    O2
+    NO
+    N
+    O
+);
+
+reactions
+{
+    // ====================== O2 DISSOCIATION (Park rxn 1) ==================
+    //   O2 + M = 2O + M      Keq set: 1.335 -4.127 -0.616 0.093 -0.005
+
+    O2dissociation_N2
+    {
+        type            reversibleneArrheniusneReaction;
+        reaction        "O2 + N2 = 2O + N2";
+        A               7.829e16;
+        beta            -1.0;
+        Ta              59370.6;
+        alphaPark       0.7;
+        twoTemperature  true;
+        KeqCoeffs       (1.335 -4.127 -0.616 0.093 -0.005);
+        KeqTheta        59369.9;
+        KeqTmin         2000.0;
+    }
+
+    O2dissociation_N
+    {
+        type            reversibleneArrheniusneReaction;
+        reaction        "O2 + N = 2O + N";
+        A               6.624e16;
+        beta            -1.0;
+        Ta              59370.6;
+        alphaPark       0.7;
+        twoTemperature  true;
+        KeqCoeffs       (1.335 -4.127 -0.616 0.093 -0.005);
+        KeqTheta        59369.9;
+        KeqTmin         2000.0;
+    }
+
+    O2dissociation_NO
+    {
+        type            reversibleneArrheniusneReaction;
+        reaction        "O2 + NO = 2O + NO";
+        A               6.624e16;
+        beta            -1.0;
+        Ta              59370.6;
+        alphaPark       0.7;
+        twoTemperature  true;
+        KeqCoeffs       (1.335 -4.127 -0.616 0.093 -0.005);
+        KeqTheta        59369.9;
+        KeqTmin         2000.0;
+    }
+
+    O2dissociation_O2
+    {
+        type            reversibleneArrheniusneReaction;
+        reaction        "O2 + O2 = 2O + O2";
+        A               3.210e16;
+        beta            -1.0;
+        Ta              59370.6;
+        alphaPark       0.7;
+        twoTemperature  true;
+        KeqCoeffs       (1.335 -4.127 -0.616 0.093 -0.005);
+        KeqTheta        59369.9;
+        KeqTmin         2000.0;
+    }
+
+    O2dissociation_O
+    {
+        type            reversibleneArrheniusneReaction;
+        reaction        "O2 + O = 2O + O";
+        A               9.033e16;
+        beta            -1.05;
+        Ta              59370.6;
+        alphaPark       0.7;
+        twoTemperature  true;
+        KeqCoeffs       (1.335 -4.127 -0.616 0.093 -0.005);
+        KeqTheta        59369.9;
+        KeqTmin         2000.0;
+    }
+
+
+    // ====================== N2 DISSOCIATION (Park rxn 2) ==================
+    //   N2 + M = 2N + M      Keq set: 3.898 -12.611 0.683 -0.118 0.006
+
+    N2dissociation_O
+    {
+        type            reversibleneArrheniusneReaction;
+        reaction        "N2 + O = 2N + O";
+        A               2.409e15;
+        beta            -0.54;
+        Ta              113497.4;
+        alphaPark       0.7;
+        twoTemperature  true;
+        KeqCoeffs       (3.898 -12.611 0.683 -0.118 0.006);
+        KeqTheta        113224.4;
+        KeqTmin         2000.0;
+    }
+
+    N2dissociation_O2
+    {
+        type            reversibleneArrheniusneReaction;
+        reaction        "N2 + O2 = 2N + O2";
+        A               9.033e15;
+        beta            -0.68;
+        Ta              113497.4;
+        alphaPark       0.7;
+        twoTemperature  true;
+        KeqCoeffs       (3.898 -12.611 0.683 -0.118 0.006);
+        KeqTheta        113224.4;
+        KeqTmin         2000.0;
+    }
+
+    N2dissociation_NO
+    {
+        type            reversibleneArrheniusneReaction;
+        reaction        "N2 + NO = 2N + NO";
+        A               9.033e15;
+        beta            -0.68;
+        Ta              113497.4;
+        alphaPark       0.7;
+        twoTemperature  true;
+        KeqCoeffs       (3.898 -12.611 0.683 -0.118 0.006);
+        KeqTheta        113224.4;
+        KeqTmin         2000.0;
+    }
+
+    N2dissociation_N2
+    {
+        type            reversibleneArrheniusneReaction;
+        reaction        "N2 + N2 = 2N + N2";
+        A               2.469e15;
+        beta            -0.62;
+        Ta              113497.4;
+        alphaPark       0.7;
+        twoTemperature  true;
+        KeqCoeffs       (3.898 -12.611 0.683 -0.118 0.006);
+        KeqTheta        113224.4;
+        KeqTmin         2000.0;
+    }
+
+    N2dissociation_N
+    {
+        type            reversibleneArrheniusneReaction;
+        reaction        "N2 + N = 2N + N";
+        A               6.022e15;
+        beta            -0.68;
+        Ta              113497.4;
+        alphaPark       0.7;
+        twoTemperature  true;
+        KeqCoeffs       (3.898 -12.611 0.683 -0.118 0.006);
+        KeqTheta        113224.4;
+        KeqTmin         2000.0;
+    }
+
+
+    // ====================== NO DISSOCIATION (Park rxn 3) ==================
+    //   NO + M = N + O + M   Keq set: 1.549 -7.784 0.228 -0.043 0.002
+
+    NOdissociation_N2
+    {
+        type            reversibleneArrheniusneReaction;
+        reaction        "NO + N2 = N + O + N2";
+        A               1.265e17;
+        beta            -1.0;
+        Ta              75544.2;
+        alphaPark       0.7;
+        twoTemperature  true;
+        KeqCoeffs       (1.549 -7.784 0.228 -0.043 0.002);
+        KeqTheta        75498.1;
+        KeqTmin         2000.0;
+    }
+
+    NOdissociation_O2
+    {
+        type            reversibleneArrheniusneReaction;
+        reaction        "NO + O2 = N + O + O2";
+        A               1.204e17;
+        beta            -1.0;
+        Ta              75544.2;
+        alphaPark       0.7;
+        twoTemperature  true;
+        KeqCoeffs       (1.549 -7.784 0.228 -0.043 0.002);
+        KeqTheta        75498.1;
+        KeqTmin         2000.0;
+    }
+
+    NOdissociation_NO
+    {
+        type            reversibleneArrheniusneReaction;
+        reaction        "NO + NO = N + O + NO";
+        A               6.022e16;
+        beta            -1.0;
+        Ta              75544.2;
+        alphaPark       0.7;
+        twoTemperature  true;
+        KeqCoeffs       (1.549 -7.784 0.228 -0.043 0.002);
+        KeqTheta        75498.1;
+        KeqTmin         2000.0;
+    }
+
+    NOdissociation_O
+    {
+        type            reversibleneArrheniusneReaction;
+        reaction        "NO + O = N + O + O";
+        A               2.409e17;
+        beta            -1.1;
+        Ta              75544.2;
+        alphaPark       0.7;
+        twoTemperature  true;
+        KeqCoeffs       (1.549 -7.784 0.228 -0.043 0.002);
+        KeqTheta        75498.1;
+        KeqTmin         2000.0;
+    }
+
+    NOdissociation_N
+    {
+        type            reversibleneArrheniusneReaction;
+        reaction        "NO + N = N + O + N";
+        A               2.409e17;
+        beta            -1.1;
+        Ta              75544.2;
+        alphaPark       0.7;
+        twoTemperature  true;
+        KeqCoeffs       (1.549 -7.784 0.228 -0.043 0.002);
+        KeqTheta        75498.1;
+        KeqTmin         2000.0;
+    }
+
+
+    // ======================= EXCHANGE (Park rxns 4, 5) ====================
+    //
+    // Both reverse partners (NOplusN_to_N2plusO and O2plusN_to_NOplusO) are
+    // deleted. Their reverse rates are now generated from Keq, which removes
+    // the thermodynamic inconsistency previously found in the
+    // NOplusO_to_O2plusN / O2plusN_to_NOplusO pair by construction.
+    //
+    // alphaPark 1.0 and twoTemperature false: exchange reactions are
+    // controlled by TTR alone.
+
+    NOplusO_to_O2plusN
+    {
+        type            reversibleneArrheniusneReaction;
+        reaction        "NO + O = O2 + N";
+        A               1.385e8;
+        beta            0.5;
+        Ta              19693.6;
+        alphaPark       1.0;
+        twoTemperature  false;
+        KeqCoeffs       (0.215 -3.657 0.843 -0.136 0.007);
+        KeqTheta        16128.2;
+        KeqTmin         2000.0;
+    }
+
+    N2plusO_to_NOplusN
+    {
+        type            reversibleneArrheniusneReaction;
+        reaction        "N2 + O = NO + N";
+        A               4.818e10;
+        beta            0.0;
+        Ta              37482.4;
+        alphaPark       1.0;
+        twoTemperature  false;
+        KeqCoeffs       (2.349 -4.828 0.455 -0.075 0.004);
+        KeqTheta        37726.4;
+        KeqTmin         2000.0;
+    }
+}
+
+// ************************************************************************* //

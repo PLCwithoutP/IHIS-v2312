@@ -1,0 +1,79 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2312                                  |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+FoamFile
+{
+    version         2;
+    format          ascii;
+    class           dictionary;
+    object          speciesDict;
+}
+
+N2
+{
+    elements
+    {
+        N               2;
+    }
+    specie
+    {
+        molWeight       28.0134;
+        type            molecular;
+    }
+    thermodynamics
+    {
+        TAbsLow         10;
+        TAbsHigh        30000;
+        TFirstInt       1000;
+        TSecondInt      6000;
+        ThetaVibrational 3371;
+        highCpCoeffs    ( 0 0 3.5 0 0 0 0 -1043.52 0 );
+        midCpCoeffs     ( 0 0 3.5 0 0 0 0 -1043.52 0 );
+        lowCpCoeffs     ( 0 0 3.5 0 0 0 0 -1043.52 0 );
+    }
+    transport
+    {
+        AB              0.027321;
+        BB              0.24321;
+        CB              -10.805;
+    }
+    dissociationPotential 3.36e+07;
+}
+
+N
+{
+    elements
+    {
+        N               1;
+    }
+    specie
+    {
+        molWeight       14.0067;
+        type            atomic;
+    }
+    thermodynamics
+    {
+        TAbsLow         10;
+        TAbsHigh        30000;
+        TFirstInt       1000;
+        TSecondInt      6000;
+        ThetaVibrational 0;
+        highCpCoeffs    ( 0 0 2.5 0 0 0 0 56104.6 0 );
+        midCpCoeffs     ( 0 0 2.5 0 0 0 0 56104.6 0 );
+        lowCpCoeffs     ( 0 0 2.5 0 0 0 0 56104.6 0 );
+    }
+    transport
+    {
+        AB              0.024768;
+        BB              0.28672;
+        CB              -10.976;
+    }
+}
+
+
+// ************************************************************************* //

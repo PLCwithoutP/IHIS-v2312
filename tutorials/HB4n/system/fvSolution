@@ -1,0 +1,62 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2312                                  |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+FoamFile
+{
+    version         2;
+    format          ascii;
+    class           dictionary;
+    location        "system";
+    object          fvSolution;
+}
+
+solvers
+{
+    Yi
+    {
+        solver          PBiCGStab;
+        preconditioner  DILU;
+        tolerance       1e-12;
+        relTol          0;
+    }
+    epsVib
+    {
+        solver          PBiCGStab;
+        preconditioner  DILU;
+        tolerance       1e-12;
+        relTol          0;
+    }
+}
+
+flowSolver
+{
+    solver          GMRES;
+    GMRES
+    {
+        inviscidJacobian LaxFriedrichs;
+        viscousJacobian laplacian;
+        preconditioner  LUSGS;
+        maxIter         30;
+        nKrylov         4;
+        solverTolRel    0.1 ( 0.1 0.1 0.1 ) 0.1;
+    }
+}
+
+pseudoTime
+{
+    nPseudoCorr     10;
+    nPseudoCorrMin  10;
+    pseudoTol       0.005 ( 0.005 0.005 0.005 ) 0.005;
+    pseudoCoNum     2;
+    pseudoCoNumMax  100;
+    pseudoCoNumMin  0.1;
+    TMin            10;
+}
+
+
+// ************************************************************************* //

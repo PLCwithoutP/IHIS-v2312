@@ -1,0 +1,30 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2312                                  |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+FoamFile
+{
+    version         2;
+    format          ascii;
+    class           dictionary;
+    object          initialConditions;
+}
+
+TTRValue        30000;
+
+TVibValue       1000;
+
+pressureValue   41441.9;
+
+velocityValue   ( 0 0 0 );
+
+N2_mass_fraction 0.666667;
+
+N_mass_fraction 0.333333;
+
+
+// ************************************************************************* //
