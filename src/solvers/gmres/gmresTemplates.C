@@ -427,6 +427,9 @@ label gmres<nScalar, nVector>::solve
 
         // Set initial rhs and bh[0] = beta
         bh = 0;
+        
+        // Number of Krylov directions actually built; < nDirs after a happy breakdown
+        label nUsed = nDirs;
 
         for (label i = 0; i < nDirs; i++)				// Search directions
         {
@@ -454,6 +457,27 @@ label gmres<nScalar, nVector>::solve
                 Pstream::waitRequest(reduceRequest[0]);
             }
             beta = Foam::sqrt(beta);			        // beta = || r_0 ||
+            
+            // Happy breakdown (Saad 2003, Sec. 6.5.1): h_{i,i-1} = beta ~ 0 means the
+            // Krylov space is exhausted and the i directions already built contain the
+            // exact solution. Normalising by beta would divide by zero (single-cell cases).
+            // Relative to the norm of column i-1 of H; the Givens rotations already
+            // applied to that column preserve its norm. beta and H are globally reduced,
+            // so every processor takes the same branch.
+            if (i > 0)
+            {
+                scalar hCol = sqr(beta);
+                for (label j = 0; j < i; j++)
+                {
+                    hCol += sqr(H[j][i-1]);
+                }
+                if (beta <= 1e-12*Foam::sqrt(hCol))
+                {
+                    nUsed = i;
+                    break;
+                }
+            }
+
             forN(nScalar,j)
             {
                 sV[j].primitiveFieldRef() /= beta;
@@ -530,14 +554,19 @@ label gmres<nScalar, nVector>::solve
 
         }
 
-        if (Pstream::parRun() && reduceRequest[0] != -1)
+        // After a breakdown, beta (~0) was already waited for and square-rooted inside
+        // the loop; only the full-length path still has a pending reduce.
+        if (nUsed == nDirs)
         {
-            Pstream::waitRequest(reduceRequest[0]);
+            if (Pstream::parRun() && reduceRequest[0] != -1)
+            {
+                Pstream::waitRequest(reduceRequest[0]);
+            }
+            beta = Foam::sqrt(beta);
         }
-        beta = Foam::sqrt(beta);
 
         // Apply Givens rotation to final row
-        label i = nDirs;
+        label i = nUsed;
         givensRotation(H[i-1][i-1], beta, c[i-1], s[i-1]);
         const scalar bhi = bh[i-1];
         bh[i-1] = c[i-1]*bhi - s[i-1]*bh[i];
@@ -545,11 +574,11 @@ label gmres<nScalar, nVector>::solve
         H[i-1][i-1] = c[i-1]*H[i-1][i-1] - s[i-1]*beta;
 
         // Back substitute to solve Hy = b
-        for (label i = nDirs - 1; i >= 0; i--)
+        for (label i = nUsed - 1; i >= 0; i--)
         {
             scalar sum = bh[i];
 
-            for (label j = i + 1; j < nDirs; j++)
+            for (label j = i + 1; j < nUsed; j++)
             {
                 sum -= H[i][j]*yh[j];
             }
@@ -558,7 +587,7 @@ label gmres<nScalar, nVector>::solve
         }
 
         // Update solution
-        for (label i = 0; i < nDirs; i++)
+        for (label i = 0; i < nUsed; i++)
         {
             const PtrList<volScalarField>& sVi = sVPtr[i];
             const PtrList<volVectorField>& vVi = vVPtr[i];

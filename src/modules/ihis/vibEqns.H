@@ -66,7 +66,7 @@ if (twoT_)
 
     const PtrList<volScalarField>* QVVp  = nullptr;   // V-V needs two molecules
     const PtrList<volScalarField>* nuVVp = nullptr;
-    if (molI_.size() > 1)
+    if (molI_.size() > 1 && vvOn_)
     {
         QVVp  = &neThermo.correctVibVibSource(TVibSpecies_);
         nuVVp = &neThermo.vibVibFrequency();           // filled by the call above
@@ -257,6 +257,7 @@ if (twoT_)
             << returnReduce(QmaxVV[m], maxOp<scalar>()) << ','
             << returnReduce(QmaxCV[m], maxOp<scalar>());
     }
+    Info<< endl;
     if (QVVp)   // PHASE6-TEMP T7.3: sum_m Q_VV,m -> 0 at the plateau, not identically
     {
         Info<< "T7.3: max|sum_m QVV| = " << gMax(mag(sumQVV))

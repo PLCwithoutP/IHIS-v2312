@@ -185,6 +185,9 @@ if (twoT_)
             << exit(FatalError);
     }
 
+    vvOn_ = neThermo.getOrDefault<bool>("VVrelaxation", true);
+    Info<< "IHIS: V-V relaxation " << ((vvOn_ && molI_.size() > 1) ? "on" : "off") << nl;
+
     Info<< "IHIS: two-temperature active, " << molI_.size()
         << " vibrational equation(s):";
     forAll(molI_, m)

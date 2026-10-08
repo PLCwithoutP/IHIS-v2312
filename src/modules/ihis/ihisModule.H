@@ -112,6 +112,7 @@ protected:
 
         //- C-V settings (Phase 6, D4), read when twoT_ && chemistry_
         bool cvPreferential_ = false;
+        bool vvOn_ = true;
         scalar alphaCV_ = 0.3;
         scalarList DVib_;     // dissociation potential per molecule [J/kg]
         
