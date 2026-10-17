@@ -54,6 +54,13 @@ License
         // Laminar transport properties (no turbulence model in IHIS)
         volScalarField muLam("muLam", neThermo.mu());
         volScalarField alphaLam("alphaLam", neThermo.kappaTRWilke()/neThermo.CvTR());
+        
+        // Physical, non-empty patches only (wall-flux storage)
+        const auto skipWall = [&mesh](const label patchi)
+        {
+            const fvPatch& fp = mesh.boundary()[patchi];
+            return fp.coupled() || fp.size() == 0;
+        };
 
         volTensorField& tauMC = tauMC_();
         tauMC = muLam*dev2(Foam::T(fvc::grad(U)));
@@ -70,6 +77,22 @@ License
             & Up
         );
         rhoER += fvc::div(sigmaDotU);
+        
+        // Wall viscous traction and work as applied
+        forAll(mesh.boundary(), patchi)
+        {
+            if (skipWall(patchi)) continue;
+            const vectorField nf
+            (
+                mesh.Sf().boundaryField()[patchi]
+               /mesh.magSf().boundaryField()[patchi]
+            );
+            wallTau_->boundaryFieldRef()[patchi] ==
+                muLam.boundaryField()[patchi]*U.boundaryField()[patchi].snGrad()
+              + (nf & tauMC.boundaryField()[patchi]);
+            wallSigmaDotU_->boundaryFieldRef()[patchi] ==
+                sigmaDotU.boundaryField()[patchi];
+        }
 
         // Vibrational conduction.
         //   GVib_m = (kappaVib_m/CvVib_m)/phi_m at T* = max(Tv_m, theta_m/20), state k
@@ -83,6 +106,8 @@ License
 
             if (GVib_.size() != Nm) GVib_.setSize(Nm);
             if (qVib_.size() != Nm) qVib_.setSize(Nm);
+            if (GammaVib_.size() != Nm) GammaVib_.setSize(Nm);
+            if (wallQVibM_.size() != Nm) wallQVibM_.setSize(Nm);
 
             // 1/W = sum_s Y_s/W_s  (mixture molar mass, boundary included)
             volScalarField invW("invW", Yv[0]/comp.W(0));
@@ -91,12 +116,13 @@ License
                 invW += Yv[s]/comp.W(s);
             }
 
+            wallQVib_() == dimensionedScalar(dimPower, Zero);
             forAll(molI_, m)
             {
                 const label s = molI_[m];
                 const scalar th = comp.thetaVib(s);
 
-                // T4.4b: evaluation temperature and Wilke-weighted conductance
+                // Evaluation temperature and Wilke-weighted conductance
                 const volScalarField TStar
                 (
                     "TStar",
@@ -107,7 +133,7 @@ License
                 // Mole fraction X_m = (Y_m/W_m)/(1/W); exactly 1 for Ns = 1
                 const volScalarField Xm("Xm", (Yv[s]/comp.W(s))/invW);
 
-                // T5.2: conduction face flux, Gamma_e,m = X_m*GVib_m
+                // Conduction face flux, Gamma_e,m = X_m*GVib_m
                 qVib_.set
                 (
                     m,
@@ -119,8 +145,57 @@ License
                     )
                 );
 
-                // T5.3: into the total-energy residual, same sign as div(kappa grad T)
+                // Into the total-energy residual, same sign as div(kappa grad T)
                 rhoER += fvc::surfaceIntegrate(qVib_[m]);
+
+                // Conductance for neSmoluchowskiJumpTv
+                GammaVib_.set
+                (
+                    m,
+                    new volScalarField
+                    (
+                        IOobject
+                        (
+                            "GammaVib_" + comp.species()[s],
+                            runTime.timeName(),
+                            mesh,
+                            IOobject::NO_READ,
+                            IOobject::NO_WRITE
+                        ),
+                        Xm*GVib_[m]
+                    )
+                );
+
+                // Wall vibrational conduction as applied,
+                // summed and per molecule
+                if (!wallQVibM_.set(m))
+                {
+                    wallQVibM_.set
+                    (
+                        m,
+                        new surfaceScalarField
+                        (
+                            IOobject
+                            (
+                                "neWall:qVib_" + comp.species()[s],
+                                runTime.timeName(),
+                                mesh,
+                                IOobject::NO_READ,
+                                IOobject::NO_WRITE
+                            ),
+                            mesh,
+                            dimensionedScalar(dimPower, Zero)
+                        )
+                    );
+                }
+                forAll(mesh.boundary(), patchi)
+                {
+                    if (skipWall(patchi)) continue;
+                    wallQVibM_[m].boundaryFieldRef()[patchi] ==
+                        qVib_[m].boundaryField()[patchi];
+                    wallQVib_->boundaryFieldRef()[patchi] +=
+                        qVib_[m].boundaryField()[patchi];
+                }
             }
         }
 
@@ -140,6 +215,16 @@ License
             const PtrList<volScalarField>& Ys = neThermo.composition().Y();
             const label last = Ys.size() - 1;
             const surfaceScalarField rhoDf(fvc::interpolate(trhoD()));
+
+            // Wall TR conduction as applied (kappa grad T, Ns > 1)
+            forAll(mesh.boundary(), patchi)
+            {
+                if (skipWall(patchi)) continue;
+                wallQTR_->boundaryFieldRef()[patchi] ==
+                    neThermo.kappaTRWilke(patchi)
+                   *neThermo.TTR().boundaryField()[patchi].snGrad()
+                   *mesh.magSf().boundaryField()[patchi];
+            }
 
             surfaceScalarField phiJSum
             (
@@ -188,6 +273,13 @@ License
             }
 
             rhoER -= fvc::surfaceIntegrate(hJ);
+            
+            // Wall species-enthalpy diffusion flux as applied
+            forAll(mesh.boundary(), patchi)
+            {
+                if (skipWall(patchi)) continue;
+                wallHJ_->boundaryFieldRef()[patchi] == hJ.boundaryField()[patchi];
+            }
         }
         else
         {
@@ -198,6 +290,16 @@ License
                 eCalc -= eVibMix_();
             }
             rhoER += fvc::laplacian(alphaLam, eCalc, "laplacian(alphaLam,e)");
+            
+            // Wall TR conduction as applied (e-form, Ns = 1)
+            forAll(mesh.boundary(), patchi)
+            {
+                if (skipWall(patchi)) continue;
+                wallQTR_->boundaryFieldRef()[patchi] ==
+                    alphaLam.boundaryField()[patchi]
+                   *eCalc.boundaryField()[patchi].snGrad()
+                   *mesh.magSf().boundaryField()[patchi];
+            }
         }
     }
 

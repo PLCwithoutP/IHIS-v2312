@@ -26,6 +26,7 @@ License
 \*---------------------------------------------------------------------------*/
 
 #include "ihisModule.H"
+#include "mixedFvPatchFields.H" 
 #include "addToRunTimeSelectionTable.H"
 #include "bound.H"
 #include "preconditioner.H"
@@ -918,6 +919,8 @@ void ihisModule::outerIteration()
     
     // Update fields
     #include "updateFields.H"
+    
+
     Info<< "min(rho) = " << gMin(rho.primitiveField())
         << ", min(TTR) = " << gMin(neThermo.TTR().primitiveField()) << endl;
 

@@ -321,12 +321,38 @@ if (twoT_)
         }
     }
     Info<< endl;
+    
+    // A molecule's TVib_<m> must not end up with a 'calculated'
+    // wall (copied from a mixture TVib wall when 0/TVib_<m> is missing)
+    forAll(molI_, m)
+    {
+        const volScalarField& Tvm = TVibSpecies_[molI_[m]];
+        forAll(Tvm.boundaryField(), patchi)
+        {
+            const fvPatchScalarField& pf = Tvm.boundaryField()[patchi];
+            if
+            (
+                !polyPatch::constraintType(mesh.boundaryMesh()[patchi].type())
+             && isA<calculatedFvPatchScalarField>(pf)
+            )
+            {
+                FatalErrorInFunction
+                    << Tvm.name() << " has a 'calculated' patch '"
+                    << mesh.boundary()[patchi].name() << "'." << nl
+                    << "    Provide 0/" << Tvm.name() << " with a real BC there"
+                    << " (e.g. neSmoluchowskiJumpTv); the mixture TVib wall is"
+                    << " 'calculated' by design (Phase 7 D12)."
+                    << exit(FatalError);
+            }
+        }
+    }
 
     // eps_m = Y_m*e_v,m (unknowns) and e_v,m (derived), Nm entries.
     // Patch types follow the molecule's own TVib_<m> patch types (D7):
     //   constraint patch (empty, symmetry, wedge, cyclic, processor, ...) -> same type
-    //   TVib fixes the value                  -> fixedValue (refreshed every iteration)
-    //   anything else                         -> zeroGradient (Phase 7: wall jump BCs)
+    //   TVib mixed (jump wall) or fixes the value -> fixedValue (refreshed every
+    //                                                iteration by vibBoundaries)
+    //   anything else                            -> zeroGradient
     // Values are set by vibEncode() (T3.5); allocated as zero here.
     epsVib_.setSize(molI_.size());
     evVib_.setSize(molI_.size());
@@ -345,6 +371,10 @@ if (twoT_)
             if (polyPatch::constraintType(pType))
             {
                 types[patchi] = pType;
+            }
+            else if (isA<mixedFvPatchScalarField>(TvBf[patchi]))
+            {
+                types[patchi] = fixedValueFvPatchScalarField::typeName;
             }
             else if (TvBf[patchi].fixesValue())
             {
@@ -594,6 +624,31 @@ if (!inviscid_)
                 IOobject::NO_WRITE
             ),
             mu*dev2(Foam::T(fvc::grad(U)))
+        )
+    );
+    // Wall-face flux storage for the neWall* function objects
+    auto makeWallScalar = [&](const word& name)
+    {
+        return new surfaceScalarField
+        (
+            IOobject(name, runTime.timeName(), mesh,
+                     IOobject::NO_READ, IOobject::NO_WRITE),
+            mesh,
+            dimensionedScalar(dimPower, Zero)
+        );
+    };
+    wallSigmaDotU_.reset(makeWallScalar("neWall:sigmaDotU"));
+    wallQTR_.reset(makeWallScalar("neWall:qTR"));
+    wallQVib_.reset(makeWallScalar("neWall:qVib"));
+    wallHJ_.reset(makeWallScalar("neWall:hJ"));
+    wallTau_.reset
+    (
+        new surfaceVectorField
+        (
+            IOobject("neWall:tau", runTime.timeName(), mesh,
+                     IOobject::NO_READ, IOobject::NO_WRITE),
+            mesh,
+            dimensionedVector(dimPressure, Zero)
         )
     );
 }

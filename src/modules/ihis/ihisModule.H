@@ -138,6 +138,21 @@ protected:
         //- Vibrational conduction face fluxes Gamma_e,m*snGrad(e_v,m)*|Sf| [W] (Nm)
         PtrList<surfaceScalarField> qVib_;
 
+        // Wall-face fluxes exactly as applied in residualsUpdate.H,
+        // kept for the neWall* function objects. Boundary faces only
+        // (internal faces zero), NO_WRITE. Sign: + into the gas, except hJ
+        // (+ out of the gas, as subtracted in the rhoE residual).
+        autoPtr<surfaceVectorField> wallTau_;        // "neWall:tau"  [Pa], wall on gas
+        autoPtr<surfaceScalarField> wallSigmaDotU_;  // "neWall:sigmaDotU" [W]
+        autoPtr<surfaceScalarField> wallQTR_;        // "neWall:qTR"  [W]
+        autoPtr<surfaceScalarField> wallQVib_;       // "neWall:qVib" [W], 2T
+        autoPtr<surfaceScalarField> wallHJ_;         // "neWall:hJ"   [W], Ns > 1
+        PtrList<surfaceScalarField> wallQVibM_;      // "neWall:qVib_<m>" [W], per molecule
+        
+        // Vibrational conductance X_m*G_m per molecule,
+        // registered as GammaVib_<m>, read by neSmoluchowskiJumpTv
+        PtrList<volScalarField> GammaVib_;
+
         //- Molecule face mass fractions from the species loop, state k (Nm)
         PtrList<surfaceScalarField> YfMol_;
 

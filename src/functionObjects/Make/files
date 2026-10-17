@@ -1,5 +1,8 @@
 shockRefinement/shockRefinement.C
 writeFields/writeFields.C
 writeCellNumbering/writeCellNumbering.C
+neWallHeatFlux/neWallHeatFlux.C
+neWallShearStress/neWallShearStress.C
+neVibWallHeatFlux/neVibWallHeatFlux.C
 
 LIB = $(FOAM_USER_LIBBIN)/libihisFunctionObjects
