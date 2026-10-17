@@ -1,0 +1,103 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2312                                  |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+FoamFile
+{
+    version         2;
+    format          ascii;
+    class           dictionary;
+    object          controlDict;
+}
+
+libs            ( "libneTCLib_2T.so" "libihisFiniteVolume.so" "libihisFunctionObjects.so" );
+
+application     ihis;
+
+startFrom       latestTime;
+
+startTime       0;
+
+stopAt          endTime;
+
+endTime         0.002;
+
+deltaT          5e-06;
+
+writeControl    timeStep;
+
+writeInterval   20;
+
+purgeWrite      0;
+
+writeFormat     ascii;
+
+writePrecision  12;
+
+writeCompression off;
+
+timeFormat      general;
+
+timePrecision   8;
+
+runTimeModifiable true;
+
+adjustTimeStep  no;
+
+functions
+{
+    wallHeatFlux
+    {
+        type            neWallHeatFlux;
+        libs            ( ihisFunctionObjects );
+        patches         ( cone );
+        writeControl    writeTime;
+    }
+    vibWallHeatFlux
+    {
+        type            neVibWallHeatFlux;
+        libs            ( ihisFunctionObjects );
+        patches         ( cone );
+        writeControl    writeTime;
+    }
+    wallShearStress
+    {
+        type            neWallShearStress;
+        libs            ( ihisFunctionObjects );
+        patches         ( cone );
+        writeControl    writeTime;
+    }
+    cellCentres
+    {
+        type            writeCellCentres;
+        libs            ( fieldFunctionObjects );
+        writeControl    writeTime;
+    }
+    stagLine
+    {
+        type            sets;
+        libs            ( sampling );
+        writeControl    writeTime;
+        setFormat       csv;
+        interpolationScheme cell;
+        fields          ( TTR TVib p rho U );
+        sets
+        {
+            axis
+            {
+                type            uniform;
+                axis            x;
+                start           ( 0.0045 1e-07 0 );
+                end             ( 0.02 1e-07 0 );
+                nPoints         2000;
+            }
+        }
+    }
+}
+
+
+// ************************************************************************* //

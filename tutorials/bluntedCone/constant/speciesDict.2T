@@ -1,0 +1,57 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2312                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      speciesDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Pure N2, 7/2-type TR-only Cp (valid for 1T N2 and required for 2T, A8).
+species
+(
+    N2
+);
+
+N2
+{
+    elements
+    {
+        N 2;
+    }
+    specie
+    {
+        molWeight       28.01348;   // as the blunted-cone case
+        type            molecular;
+    }
+    thermodynamics
+    {
+        TAbsLow             10;     // A12: avoid the silent clamp (inflow 144.4 K)
+        TAbsHigh            30000;
+        TFirstInt           1000;
+        TSecondInt          6000;
+        ThetaVibrational    3371;
+        warnOutOfRange      false;
+        highCpCoeffs ( 0 0 3.5 0 0 0 0 -1.043525e+03 0 );
+        midCpCoeffs  ( 0 0 3.5 0 0 0 0 -1.043525e+03 0 );
+        lowCpCoeffs  ( 0 0 3.5 0 0 0 0 -1.043525e+03 0 );
+    }
+    // Lalande et al., AIAA J. 63(8), 2025 (Blottner coefficients)
+    transport
+    {
+        AB              2.68e-02;
+        BB              3.18e-01;
+        CB              -1.13e+01;
+        Sc              0.833;
+    }
+    dissociationPotential   3.36e7;
+}
+
+// ************************************************************************* //

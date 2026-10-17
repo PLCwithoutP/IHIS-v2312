@@ -1,0 +1,41 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2312                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      stagLine;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Stagnation-line sampling. Used by controlDict (#includeFunc stagLine) and
+// directly on the nexaFoam case (copy this file to its system/):
+//     postProcess -func stagLine -time 0.0002
+// The axis is y = z = 0; the line lies just off it (inside the wedge).
+// Points inside the cone body are dropped by the sampler.
+
+type            sets;
+libs            (sampling);
+writeControl    writeTime;
+setFormat       csv;
+interpolationScheme cell;
+fields          (TTR TVib p rho U);
+sets
+{
+    axis
+    {
+        type    uniform;
+        axis    x;
+        start   (0.0045 1e-7 0);
+        end     (0.0200 1e-7 0);
+        nPoints 2000;
+    }
+}
+
+// ************************************************************************* //

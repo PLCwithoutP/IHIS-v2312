@@ -1,0 +1,54 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2312                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volVectorField;
+    object      U;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+#include "initialConditions"
+
+dimensions      [0 1 -1 0 0 0 0];
+
+internalField   uniform $UValue;
+
+boundaryField
+{
+    inlet
+    {
+        type            fixedValue;
+        value           uniform $UValue;
+    }
+    outlet
+    {
+        type            zeroGradient;       // supersonic outflow
+    }
+    cone
+    {
+        type            neMaxwellSlipU;
+        accommodationCoeff $sigmaU;
+        omega           $omegaVHS;
+        Uwall           uniform (0 0 0);
+        thermalCreep    false;
+        curvature       false;
+        value           uniform (0 0 0);
+    }
+    wedge1
+    {
+        type            wedge;
+    }
+    wedge2
+    {
+        type            wedge;
+    }
+}
+
+// ************************************************************************* //

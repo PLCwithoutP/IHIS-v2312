@@ -1,0 +1,58 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2312                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      fvSchemes;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Same numerics as the IHIS heat-bath tutorials (HB5).
+
+fluxScheme      AUSMPlusUp;
+
+lowMachAusm     false;
+
+ddtSchemes
+{
+    default         dualTime rPseudoDeltaT backward;
+}
+
+gradSchemes
+{
+    default         Gauss linear;
+}
+
+divSchemes
+{
+    div(tauMC)      Gauss linear;
+    div(phi,Yi)     Gauss upwind;
+    div(phi,epsVib) Gauss upwind;
+}
+
+laplacianSchemes
+{
+    default         Gauss linear corrected;
+}
+
+interpolationSchemes
+{
+    default         linear;
+    reconstruct(rho) wVanLeer;
+    reconstruct(U)  wVanLeer;
+    reconstruct(T)  wVanLeer;     // scheme label, not a field name (covers c, E, H)
+}
+
+snGradSchemes
+{
+    default         corrected;
+}
+
+// ************************************************************************* //

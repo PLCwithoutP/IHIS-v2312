@@ -1,0 +1,85 @@
+#!/bin/bash
+#------------------------------------------------------------------------------
+# IHIS Phase 7: Mach 11.3 N2 blunted cone (Casseau et al. 2016), T7.1-T7.4.
+#
+#   ./Allrun import    one-off, on a machine that has the nexaFoam case: copy the
+#                      mesh to constant/polyMesh and the reference data to
+#                      references/; afterwards the case is self-contained
+#   ./Allrun 1T        build run_1T (mesh from constant/polyMesh), run in parallel
+#   ./Allrun 2T        build run_2T from the latest reconstructed run_1T state, run
+#   ./Allrun post 1T   (or 2T) surface Cp/Cf/St + stagnation line plots (T8.1-T8.3)
+#
+# Settings (environment overrides):
+#   NEXA   nexaFoam blunted-cone case; only read by './Allrun import'
+#   NP     number of processors (default 16, must match system/decomposeParDict)
+#------------------------------------------------------------------------------
+cd "${0%/*}" || exit 1
+NEXA=${NEXA:-/home/administrator/Desktop/cfdProjects/openFoam/OF2512/nexaFoam/bluntedCone_test}
+NP=${NP:-16}
+mode=${1:-1T}
+
+prepare()   # prepare <dir> <1T|2T>
+{
+    d=$1
+    rm -rf "$d"; mkdir -p "$d/0"
+    [ -f constant/polyMesh/owner ] || [ -f constant/polyMesh/owner.gz ] \
+        || { echo "No constant/polyMesh: run './Allrun import' once (needs NEXA)"; exit 1; }
+    cp -r system constant "$d"/        # includes constant/polyMesh
+    if [ "$2" = 2T ]; then
+        mv "$d/constant/thermophysicalProperties.2T" "$d/constant/thermophysicalProperties"
+        mv "$d/constant/speciesDict.2T" "$d/constant/speciesDict"
+    fi
+    rm -f "$d"/constant/*.2T
+    foamDictionary -entry numberOfSubdomains -set "$NP" "$d/system/decomposeParDict" > /dev/null
+}
+
+runPar()    # runPar <dir>
+{
+    ( cd "$1" && checkMesh > log.checkMesh 2>&1 && grep -q "Mesh OK" log.checkMesh ) \
+        || { echo "checkMesh failed: $1/log.checkMesh"; exit 1; }
+    ( cd "$1" && decomposePar -force > log.decomposePar 2>&1 ) \
+        || { echo "decomposePar failed: $1/log.decomposePar"; exit 1; }
+    echo "running $1 on $NP processors (tail -f $1/log.ihis)"
+    ( cd "$1" && mpirun -np "$NP" ihis -parallel > log.ihis 2>&1 )
+    ( cd "$1" && reconstructPar > log.reconstructPar 2>&1 )
+    grep -q "^End" "$1/log.ihis" && echo "  finished" || echo "  STOPPED: see $1/log.ihis"
+}
+
+case "$mode" in
+import)
+    [ -d "$NEXA/constant/polyMesh" ] || { echo "NEXA case not found: $NEXA"; exit 1; }
+    rm -rf constant/polyMesh; cp -r "$NEXA/constant/polyMesh" constant/
+    mkdir -p references/nexaFoam/postProcessing/stagLine
+    cp "$NEXA"/hy2Foam_*.csv "$NEXA"/monacoDSMC_*.csv references/
+    if [ -d "$NEXA/postProcessing/stagLine/0.0002" ]; then
+        cp -r "$NEXA/postProcessing/stagLine/0.0002" references/nexaFoam/postProcessing/stagLine/
+    else
+        echo "  note: no nexaFoam stagLine output at 0.0002 (overlay will be skipped)"
+    fi
+    echo "imported mesh and references from $NEXA:"; ls constant/polyMesh references
+    ;;
+1T)
+    prepare run_1T 1T
+    cp 0.orig/initialConditions 0.orig/p 0.orig/U 0.orig/TTR 0.orig/TVib 0.orig/Y_N2 run_1T/0/
+    runPar run_1T
+    ;;
+2T)
+    src=run_1T
+    tl=$(foamListTimes -case $src -latestTime 2>/dev/null | tail -1)
+    [ -n "$tl" ] && [ -f "$src/$tl/TTR" ] || { echo "No reconstructed run_1T state"; exit 1; }
+    echo "2T start state: run_1T/$tl"
+    prepare run_2T 2T
+    cp 0.orig/initialConditions run_2T/0/
+    for f in p U TTR Y_N2; do cp "$src/$tl/$f" run_2T/0/; done
+    cp 0.orig/TVib.2T run_2T/0/TVib; cp 0.orig/TVib_N2.2T run_2T/0/TVib_N2   # T_v = T_inf
+    foamDictionary -entry endTime -set 1e-03 run_2T/system/controlDict > /dev/null
+    runPar run_2T
+    ;;
+post)
+    d=run_${2:-1T}
+    python3 bluntedCone_post.py "$d"
+    ;;
+*)
+    echo "usage: ./Allrun import | 1T | 2T | post [1T|2T]"; exit 1
+    ;;
+esac

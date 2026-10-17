@@ -1,0 +1,28 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2312                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      initialConditions;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Casseau et al. (2016), Table 1: Mach 11.3 N2 blunted cone
+TValue          144.4;
+pValue          21.9139;
+UValue          (2764.5 0 0);
+TwallValue      297.2;
+
+// Rarefied wall (Phase 7 D7, D8; as the hy2Foam blunted-cone tutorial)
+sigmaU          1;      // tangential momentum accommodation
+alphaT          1;      // thermal accommodation
+omegaVHS        0.74;   // N2 (Bird 1994)
+
+// ************************************************************************* //
