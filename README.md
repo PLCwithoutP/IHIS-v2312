@@ -19,7 +19,7 @@ Key capabilities:
   - Finite-rate chemistry (e.g. Park 5-species air: N₂, O₂, NO, N, O). Heats of formation are carried inside the total energy, so chemistry is energy-neutral by construction
   - Species diffusion by Fick's law with constant Lewis number
   - Temperature-dependent properties (cₚ(T), e(T), μ(T), κ(T), …) provided by **neTCLib**
-  - Laminar flow only (HiSA's turbulence modelling is removed)
+  - Laminar flow only
 - **Numerics**
   - HiSA's coupled implicit solution of the mean-flow block (ρ, ρ**u**, ρE) with a matrix-free GMRES solver and an approximate (Lax–Friedrichs) flux Jacobian as the preconditioning operator
   - Upwind flux schemes: AUSM⁺-up, HLLC, Lax–Friedrichs
@@ -32,7 +32,7 @@ Key capabilities:
   - Blunt and streamlined hypersonic bodies: cylinders, spheres, blunted cones, wedges and ramps
   - Shock–shock and shock–boundary-layer interactions (e.g. Edney Type IV), in both steady and time-accurate modes
   - Shock layers with strong vibrational excitation and dissociation
-  - High-enthalpy flows where chemistry matters but **plasma effects are out of scope**
+  - High-enthalpy flows where chemistry matters
 
 ---
 
@@ -40,13 +40,19 @@ Key capabilities:
 IHIS/
 ├─ src/
 │  ├─ modules/
-│  │  └─ ihis/                 # solver module: coupled outer iteration, field update, residuals
-│  └─ finiteVolume/
-│     ├─ fluxSchemes/          # AUSM+up, HLLC, Lax-Friedrichs
-│     ├─ jacobians/            # inviscid and viscous flux Jacobians
-│     └─ boundaryConditions/   # characteristic BCs
+│  │  └─ ihis/ # solver module: coupled outer iteration, field update, residuals
+│  ├─ functionObjects/
+│  ├─ meshRebalancing/
+│  ├─ preconditioners/
+│  ├─ solvers/                  # linear solvers
+│  ├─ finiteVolume/
+│  │   ├─ fluxSchemes/          # AUSM+up, HLLC, Lax-Friedrichs
+│  │   ├─ jacobians/            # inviscid and viscous flux Jacobians
+│  │   └─ boundaryConditions/   # characteristic BCs
+│  └─ thermophysicalModels/     # neTCLib
 ├─ tutorials/                  # example/tutorial cases
 ├─ tests/                      # verification scripts
+├─ docs/                       # documentation
 ├─ README.md
 ```
 
