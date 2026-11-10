@@ -1,0 +1,1 @@
+../boundaryConditions/characteristic/characteristicFarfield/characteristicFarfieldVelocityFvPatchVectorField.C

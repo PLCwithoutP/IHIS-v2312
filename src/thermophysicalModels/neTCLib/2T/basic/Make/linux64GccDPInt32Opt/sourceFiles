@@ -1,0 +1,16 @@
+SOURCE = \
+basic2TThermo/basic2TThermo.C \
+fluid2TThermo/fluid2TThermo.C \
+ne2TThermo/ne2TThermo.C \
+ne2TThermo/ne2TThermos.C \
+derivedFv2TPatchFields/fixed2TEnergy/fixed2TEnergyFvPatchScalarField.C \
+derivedFv2TPatchFields/gradient2TEnergy/gradient2TEnergyFvPatchScalarField.C \
+derivedFv2TPatchFields/mixed2TEnergy/mixed2TEnergyFvPatchScalarField.C \
+derivedFv2TPatchFields/energy2TJump/energy2TJump/energy2TJumpFvPatchScalarField.C \
+derivedFv2TPatchFields/energy2TJump/energy2TJumpAMI/energy2TJumpAMIFvPatchScalarField.C \
+derivedFv2TPatchFields/fixedVibEnergy/fixedVibEnergyFvPatchScalarField.C \
+derivedFv2TPatchFields/gradientVibEnergy/gradientVibEnergyFvPatchScalarField.C \
+derivedFv2TPatchFields/mixedVibEnergy/mixedVibEnergyFvPatchScalarField.C \
+derivedFv2TPatchFields/energyVibJump/energyVibJump/energyVibJumpFvPatchScalarField.C \
+
+# sources

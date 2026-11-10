@@ -47,7 +47,7 @@ EXE_INC = -I$(LIB_SRC)/finiteVolume/lnInclude -I$(LIB_SRC)/meshTools/lnInclude -
 
 
 
-EXE_LIBS = -lfiniteVolume -lmeshTools -L$(FOAM_USER_LIBBIN) -lsolverModule -lihisModule -lihisSolvers -lihisFunctionObjects -lihisMeshRebalancing
+EXE_LIBS = -lfiniteVolume -lmeshTools -L$(FOAM_USER_LIBBIN) -lihisSolverModule -lihisModule -lihisSolvers -lihisFunctionObjects -lihisMeshRebalancing
 # 19 "Make/options"
 
 ifeq ($(shell expr $(MAJ_VER) \>= 2206), 1)

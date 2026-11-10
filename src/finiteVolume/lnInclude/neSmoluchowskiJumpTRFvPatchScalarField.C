@@ -1,0 +1,1 @@
+../boundaryConditions/rarefied/neSmoluchowskiJumpTR/neSmoluchowskiJumpTRFvPatchScalarField.C

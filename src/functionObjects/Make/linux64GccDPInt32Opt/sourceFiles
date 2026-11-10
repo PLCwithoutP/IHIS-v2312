@@ -1,0 +1,9 @@
+SOURCE = \
+shockRefinement/shockRefinement.C \
+writeFields/writeFields.C \
+writeCellNumbering/writeCellNumbering.C \
+neWallHeatFlux/neWallHeatFlux.C \
+neWallShearStress/neWallShearStress.C \
+neVibWallHeatFlux/neVibWallHeatFlux.C \
+
+# sources
