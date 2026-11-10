@@ -219,18 +219,13 @@ if (twoT_)
         epsEqn.solve(mesh.solverDict("epsVib"));
     }
 
-    // (e) Clip, decode, log (D6, D10)
+    // (e) Count negative eps (kept for conservation), decode, log
     label nClip = 0;
     forAll(epsVib_, m)
     {
-        scalarField& epsI = epsVib_[m].primitiveFieldRef();
-        forAll(epsI, celli)
+        for (const scalar e : epsVib_[m].primitiveField())
         {
-            if (epsI[celli] < 0)
-            {
-                epsI[celli] = 0;
-                ++nClip;
-            }
+            if (e < 0) ++nClip;
         }
     }
     nClip = returnReduce(nClip, sumOp<label>());

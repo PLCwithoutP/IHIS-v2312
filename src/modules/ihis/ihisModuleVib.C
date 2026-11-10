@@ -85,7 +85,7 @@ inline scalar TvMixPoint
     {
         if (Ym[m] >= YMolMin)
         {
-            target += epsm[m];
+            target += max(epsm[m], scalar(0));
             Tlo = min(Tlo, Tvm[m]);
             Thi = max(Thi, Tvm[m]);
             ++nPresent;
@@ -99,6 +99,23 @@ inline scalar TvMixPoint
     if (Thi - Tlo <= 1e-12*Thi)
     {
         return Thi;                                  // uniform Tv (incl. Nm = 1): exact
+    }
+
+    // No root above the floor: target at or below the energy at TvMin
+    {
+        scalar fMin = 0;
+        forAll(molI, m)
+        {
+            if (Ym[m] < YMolMin) continue;
+
+            const label s = molI[m];
+            fMin += Ym[m]*comp.EsVib(s, p, TTR, TvMin, comp.thetaVib(s));
+        }
+
+        if (target <= fMin)
+        {
+            return TvMin;
+        }
     }
 
     scalar T = Thi;

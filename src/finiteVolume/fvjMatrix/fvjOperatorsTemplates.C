@@ -694,7 +694,7 @@ laplacian
     Field<LDUType>& low = mx.lower();
 
     tmp<GeometricField<scalar, fvsPatchField, surfaceMesh> > sf2 = 
-        sf*mesh.magSf()*mesh.deltaCoeffs();
+        sf*mesh.magSf()*mesh.nonOrthDeltaCoeffs();
 
     const labelUList& owner = mesh.owner();
     const labelUList& neighbour = mesh.neighbour();
@@ -798,7 +798,7 @@ laplacian
     fvjMatrix<LDUType>& mx = tmx.ref();
 
     tmp<GeometricField<scalar, fvsPatchField, surfaceMesh> > sf2 = 
-        sf*mesh.magSf()*mesh.deltaCoeffs();
+        sf*mesh.magSf()*mesh.nonOrthDeltaCoeffs();
 
     Field<LDUType>& diag = mx.diag();
     Field<LDUType>& upp = mx.upper();

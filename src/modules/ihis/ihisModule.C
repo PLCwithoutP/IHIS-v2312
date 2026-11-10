@@ -896,6 +896,25 @@ void ihisModule::outerIteration()
             }
         }
 
+        {
+            label nBound = 0;
+            forAll(rho, celli)
+            {
+                if
+                (
+                    rho[celli] < rhoMin[celli] || rho[celli] > rhoMax[celli]
+                 || eTemp[celli] < eMin[celli] || eTemp[celli] > eMax[celli]
+                )
+                {
+                    ++nBound;
+                }
+            }
+            reduce(nBound, sumOp<label>());
+            if (nBound)
+            {
+                Info<< "Bounding: " << nBound << " cells limited" << endl;
+            }
+        }
         // Also clamp the variables themselves
         rho = max(rho, rhoMin);
         rho = min(rho, rhoMax);

@@ -127,6 +127,34 @@
             tmp<surfaceScalarField> Yf = surfaceFieldSelect(YL, YR, phi, 0.0);         
             tmp<surfaceScalarField> YfUpwind = upwindYf.interpolate(Yi);
 
+            // Keep this molecule's face mass fraction for vibEqns.H (state k)
+            if (twoT_)
+            {
+                if (YfMol_.size() != molI_.size())
+                {
+                    YfMol_.setSize(molI_.size());
+                }
+
+                forAll(molI_, m)
+                {
+                    if (molI_[m] != i) continue;
+
+                    if (!YfMol_.set(m))
+                    {
+                        YfMol_.set
+                        (
+                            m,
+                            new surfaceScalarField("YfMol_" + Yi.name(), Yf())
+                        );
+                    }
+                    else
+                    {
+                        YfMol_[m].primitiveFieldRef() = Yf().primitiveField();
+                        YfMol_[m].boundaryFieldRef() == Yf().boundaryField();
+                    }
+                }
+            }
+
             // Implicit upwind + second-order deferred correction
             fvScalarMatrix YiEqn
             (
