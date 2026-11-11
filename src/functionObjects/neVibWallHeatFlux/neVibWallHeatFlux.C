@@ -117,20 +117,29 @@ bool Foam::functionObjects::neVibWallHeatFlux::write()
         molNames[k] = fluxNames[k].substr(prefix.size());
     }
 
-    volScalarField qWall
-    (
-        IOobject
+    volScalarField* qWallPtr =
+        mesh_.getObjectPtr<volScalarField>("neVibWallHeatFlux");
+
+    if (!qWallPtr)
+    {
+        qWallPtr = new volScalarField
         (
-            "neVibWallHeatFlux",
-            time_.timeName(),
+            IOobject
+            (
+                "neVibWallHeatFlux",
+                time_.timeName(),
+                mesh_,
+                IOobject::NO_READ,
+                IOobject::NO_WRITE,
+                IOobject::REGISTER
+            ),
             mesh_,
-            IOobject::NO_READ,
-            IOobject::NO_WRITE,
-            IOobject::NO_REGISTER
-        ),
-        mesh_,
-        dimensionedScalar(dimPower/dimArea, Zero)
-    );
+            dimensionedScalar(dimPower/dimArea, Zero)
+        );
+        mesh_.objectRegistry::store(qWallPtr);
+    }
+
+    volScalarField& qWall = *qWallPtr;
 
     const fileName outDir
     (

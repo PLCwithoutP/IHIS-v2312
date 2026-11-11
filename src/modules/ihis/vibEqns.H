@@ -214,6 +214,31 @@ if (twoT_)
 
             epsEqn -= Qs - as*eps.internalField();   // explicit part Q^k - a eps^k
             epsEqn += fvm::SuSp(-as, eps);           // -a eps on the LHS, implicit (a <= 0)
+                    // DIAGNOSTIC: source budget in the hottest cell of this molecule
+            if (chemistry_)
+            {
+                const scalarField& TvD = TVibSpecies_[s].primitiveField();
+                const scalar TvMaxAll = gMax(TvD);      // all processors
+                const label cD = findMax(TvD);          // this processor
+                if (cD >= 0 && TvD[cD] >= TvMaxAll)
+                {
+                    const scalar Yc  = Yv[s][cD];
+                    const scalar wc  = chemistry_->RR(s)[cD];
+                    const scalar aDd = alphaCV_*DVib_[m];
+                    const scalar qCV = wc*(cvPreferential_ ? aDd : ev[cD]);
+                    const scalar qVT = Qs[cD] - qCV;
+                    const scalar evc = eps[cD]/max(Yc, VSMALL);
+
+                    Pout<< "VibDiag " << comp.species()[s]
+                        << " at " << mesh.C()[cD]
+                        << " Tv " << TvD[cD] << " TTR " << TI[cD]
+                        << " Y " << Yc << " ev/aD " << evc/aDd
+                        << " w " << wc
+                        << " qVT " << qVT << " qCV " << qCV
+                        << " srcHeating " << (qVT + qCV - evc*wc)
+                        << endl;
+                }
+            }
         }
 
         epsEqn.solve(mesh.solverDict("epsVib"));

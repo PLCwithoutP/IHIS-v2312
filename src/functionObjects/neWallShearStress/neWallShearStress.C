@@ -93,20 +93,29 @@ bool Foam::functionObjects::neWallShearStress::write()
         return true;
     }
 
-    volVectorField tauWall
-    (
-        IOobject
+    volVectorField* tauWallPtr =
+        mesh_.getObjectPtr<volVectorField>("neWallShearStress");
+
+    if (!tauWallPtr)
+    {
+        tauWallPtr = new volVectorField
         (
-            "neWallShearStress",
-            time_.timeName(),
+            IOobject
+            (
+                "neWallShearStress",
+                time_.timeName(),
+                mesh_,
+                IOobject::NO_READ,
+                IOobject::NO_WRITE,
+                IOobject::REGISTER
+            ),
             mesh_,
-            IOobject::NO_READ,
-            IOobject::NO_WRITE,
-            IOobject::NO_REGISTER
-        ),
-        mesh_,
-        dimensionedVector(dimPressure, Zero)
-    );
+            dimensionedVector(dimPressure, Zero)
+        );
+        mesh_.objectRegistry::store(tauWallPtr);
+    }
+
+    volVectorField& tauWall = *tauWallPtr;
 
     const fileName outDir
     (

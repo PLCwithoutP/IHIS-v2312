@@ -112,20 +112,29 @@ bool Foam::functionObjects::neWallHeatFlux::write()
         return true;
     }
 
-    volScalarField qWall
-    (
-        IOobject
+    volScalarField* qWallPtr =
+        mesh_.getObjectPtr<volScalarField>("neWallHeatFlux");
+
+    if (!qWallPtr)
+    {
+        qWallPtr = new volScalarField
         (
-            "neWallHeatFlux",
-            time_.timeName(),
+            IOobject
+            (
+                "neWallHeatFlux",
+                time_.timeName(),
+                mesh_,
+                IOobject::NO_READ,
+                IOobject::NO_WRITE,
+                IOobject::REGISTER
+            ),
             mesh_,
-            IOobject::NO_READ,
-            IOobject::NO_WRITE,
-            IOobject::NO_REGISTER
-        ),
-        mesh_,
-        dimensionedScalar(dimPower/dimArea, Zero)
-    );
+            dimensionedScalar(dimPower/dimArea, Zero)
+        );
+        mesh_.objectRegistry::store(qWallPtr);
+    }
+
+    volScalarField& qWall = *qWallPtr;
 
     const fileName outDir
     (
